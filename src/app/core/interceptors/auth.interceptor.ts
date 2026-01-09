@@ -1,91 +1,94 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, switchMap, throwError, from } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
 /**
- * AUTH INTERCEPTOR (Functional)
+ * AUTH INTERCEPTOR
  * 
- * Bertindak sebagai middleware untuk setiap request HTTP yang keluar dari aplikasi.
- * Tugas Utama:
- * 1. Inject Token: Menambahkan Header Authorization ke setiap request.
- * 2. Auto-Refresh: Jika server membalas 401 (kadaluarsa), lakukan refresh token otomatis.
+ * Bayangkan ini sebagai 'Pintu Gerbang' atau 'Satpam' aplikasi.
+ * Setiap ada data yang mau keluar (Request) atau mau masuk (Response), dia yang periksa.
  */
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
-    // Inject service secara fungsional (bukan via constructor)
+    // 1. Kita panggil 'Kunci' (Token) dari AuthService
     const authService = inject(AuthService);
     const token = authService.getAccessToken();
 
-    /**
-     * WHITELIST ENDPOINTS:
-     * Daftar URL yang tidak boleh disisipi token (seperti login atau refresh itu sendiri).
-     */
+    // 2. TENTUKAN ALAMAT YANG GAK PERLU TOKEN
+    // Kalo mau login, kita belum punya token, jadi jangan dipasangin token.
     const skipUrls = ['/api/auth/login', '/api/auth/refresh'];
     const shouldSkip = skipUrls.some(url => req.url.includes(url));
 
     let authReq = req;
 
-    // Langkah 1: Sisipkan token "Bearer" jika ada dan tidak dalam blacklist
+    /**
+     * LANGKAH 1: PASANG TOKEN (REQUEST)
+     * Kalo kita punya token dan alamatnya BUKAN alamat login, 
+     * kita masukkan token tersebut ke 'Header' paket data kita.
+     */
     if (token && !shouldSkip) {
+        // Kita cloning request aslinya, lalu kita tambahkan header Authorization
         authReq = req.clone({
             setHeaders: {
-                Authorization: `Bearer ${token}`
+                Authorization: `Bearer ${token}` // Format standar JWT: 'Bearer <kuncinya>'
             }
         });
     }
 
     /**
-     * Langkah 2: Tangani respons dari server
-     * pipa .PIPE() digunakan untuk mencegat error.
+     * LANGKAH 2: PANTAU JAWABAN (RESPONSE)
+     * next(authReq) artinya 'Lepaskan paket data ke internet'.
+     * .pipe(catchError(...)) artinya 'Kalo ada error dari server, lakukan sesuatu'.
      */
     return next(authReq).pipe(
         catchError((error: HttpErrorResponse) => {
             /**
-             * TOKEN EXPIRED HANDLING (HTTP 401):
-             * Jika token mati ditengah jalan, jangan langsung lempar error ke user.
-             * Cobalah untuk memanggil fungsi refreshToken di background.
+             * PENANGANAN ERROR 401 (UNAUTHORIZED / TOKEN MATI)
+             * Kalo server bilang 401, artinya 'AccessToken kamu sudah basi/kadaluarsa'.
              */
             if (error.status === 401 && !shouldSkip) {
+                // Panggil bantuan buat refresh kuncinya secara otomatis!
                 return handle401Error(authReq, next, authService);
             }
+            // Kalo errornya bukan 401 (misal error 500), kita lempar aja ke UI biar UI yang handle.
             return throwError(() => error);
         })
     );
 };
 
 /**
- * HELPER: HANDLE 401 ERROR
- * Mengintegrasikan alur 'silent refresh token' ke dalam aliran RxJS.
+ * HANDLE REFRESH TOKEN SECARA DIAM-DIAM (SILENT REFRESH)
+ * Gunanya: Biar user gak ngerasa tokennya abis, dia gak bakal disuruh logout.
  */
 function handle401Error(req: HttpRequest<unknown>, next: HttpHandlerFn, authService: AuthService) {
-    /**
-     * Ubah Promise refreshToken() menjadi Observable (RxJS) menggunakan from()
-     * switchMap() digunakan untuk beralih dari satu alur request ke alur request baru.
-     */
-    return from(authService.refreshToken()).pipe(
-        switchMap((success) => {
-            if (success) {
-                /**
-                 * RE-TRY MECHANISM:
-                 * Jika refresh token berhasil, kita ambil token baru yang baru saja disimpan.
-                 * Kloning request lama yang gagal tadi, ganti Bearer-nya, lalu kirim ulang.
-                 */
+    // 1. Minta AuthService buat tukerin RefreshToken jadi AccessToken baru
+    return authService.refreshToken().pipe(
+        /**
+         * SWITCHMAP:
+         * Gunanya buat nunda request yang tadinya gagal (tunggu dapet token baru dulu).
+         */
+        switchMap((response) => {
+            if (response.success) {
+                // YEAY! Dapet token baru. Sekarang kita ambil kuncinya.
                 const newToken = authService.getAccessToken();
+
+                // 2. Kloning ulang request lama yang GAGAL tadi, pasangin TOKEN BARU.
                 const retryReq = req.clone({
                     setHeaders: {
                         Authorization: `Bearer ${newToken}`
                     }
                 });
-                // Kirim ulang request yang tertunda
+
+                // 3. Kirim ulang paketnya! User gak bakal tau kalo tadi sempet gagal.
                 return next(retryReq);
             } else {
-                // Jika refresh gagal (misal: refresh token habis masa berlakunya), lempar error sesi habis
-                authService.logout();
-                return throwError(() => new Error('Session Expired'));
+                // Kalo usaha refresh gagal juga (misal: RefreshToken juga abis masanya)
+                authService.logout(); // Paksa keluar
+                return throwError(() => new Error('Sesi sudah habis, silakan login ulang.'));
             }
         }),
         catchError((err) => {
-            // Jika terjadi error teknis saat refresh, keluarkan user secara paksa
+            // Kalo koneksi putus pas lagi refresh
             authService.logout();
             return throwError(() => err);
         })

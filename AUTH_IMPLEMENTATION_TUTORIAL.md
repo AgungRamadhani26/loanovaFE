@@ -1,287 +1,79 @@
-# Panduan Lengkap Implementasi Autentikasi JWT & Refresh Token (Angular v21)
+# Tutorial Implementasi Autentikasi JWT (Angular v21)
 
-Dokumen ini berisi tutorial langkah-demi-langkah pembuatan fitur autentikasi pada aplikasi **Loanova**. Tutorial ini mencakup seluruh kode sumber, struktur folder modular, dan penjelasan detail mengenai cara kerja setiap bagiannya.
-
----
-
-## 1. Konfigurasi Lingkungan (Proxy & Permintaan API)
-
-Karena Frontend (port 4200) dan Backend (port 9091) berjalan pada port yang berbeda, kita menggunakan **Proxy Dev Server** untuk menghindari blokir CORS di browser.
-
-### a. `proxy.conf.json`
-File ini diletakkan di root direktori proyek. Tugasnya adalah mengalihkan setiap request yang dimulai dengan `/api` ke backend asli di port 9091.
-
-```json
-{
-  "/api": {
-    "target": "http://localhost:9091",
-    "secure": false,
-    "changeOrigin": true,
-    "logLevel": "debug"
-  }
-}
-```
-
-### b. `angular.json` (Konfigurasi Serve)
-Daftarkan file proxy tersebut di bagian `serve.options` agar otomatis aktif saat menjalankan `ng serve`.
-
-```json
-"serve": {
-  "builder": "@angular/build:dev-server",
-  "options": {
-    "proxyConfig": "proxy.conf.json"
-  },
-  ...
-}
-```
+Hai! Dokumen ini dibuat spesial buat kamu biar paham **setiap baris kode** yang kita tulis buat fitur Login. Kita pakai pola modern: **Angular Signals** (buat state) dan **RxJS Observable** (buat API).
 
 ---
 
-## 2. Struktur Modular Model Data (DTO)
+## 1. Alur Kerja Autentikasi (Story)
 
-Setiap interface dipisahkan ke dalam file masing-masing untuk meningkatkan kemudahan pemeliharaan (Maintainability).
-
-### a. Enum User Role (`core/models/user-role.enum.ts`)
-Mendefinisikan daftar hak akses yang diakui oleh sistem.
-
-```typescript
-export enum UserRole {
-    SUPERADMIN = 'SUPERADMIN',
-    BACKOFFICE = 'BACKOFFICE',
-    CUSTOMER = 'CUSTOMER',
-    MARKETING = 'MARKETING',
-    BRANCHMANAGER = 'BRANCHMANAGER'
-}
-```
-
-### b. Base Response (`core/models/response/api-response.model.ts`)
-Struktur standar untuk setiap jawaban yang diterima dari API Backend.
-
-```typescript
-export interface ApiResponse<T> {
-    success: boolean;   // Status operasi (true/false)
-    message: string;   // Pesan penjelasan dari server
-    data: T;           // Payload data utama (dinamis)
-    code: number;      // HTTP Code (200, 400, 500, dll)
-    timestamp: string; // Waktu pengiriman respons
-}
-```
-
-### c. Login Request & Response (`request/login-request.model.ts` & `response/login-response.model.ts`)
-Kontrak data khusus untuk proses login.
-
-```typescript
-// Request
-export interface LoginRequestDTO {
-    username: string;
-    password: string;
-}
-
-// Response (Payload di dalam data)
-export interface LoginData {
-    accessToken: string;
-    refreshToken: string;
-    type: string;
-    username: string;
-    roles: UserRole[];
-}
-```
+1.  **User mengetik**: Data ditampung di `signal` (username & password).
+2.  **User Klik Tombol**: Fungsi `onSubmit()` di komponen jalan.
+3.  **Kirim ke Service**: Komponen manggil `AuthService.login()`.
+4.  **Aksi Service**: Service ngirim paket POST ke backend lewat **Proxy**.
+5.  **Simpan Sesi**: Sambil data lewat, Service pake operator `tap` buat nangkep token dan nyimpen di **LocalStorage** (biar pas di refresh gak logout).
+6.  **Izin Akses**: `AuthInterceptor` bakal otomatis nempelin token tadi ke setiap request selanjutnya biar server kenal siapa kita.
 
 ---
 
-## 3. Manajemen State & Bisnis Logik (`core/services/auth.service.ts`)
+## 2. Bedah Kode: Jantung Aplikasi (`AuthService`)
 
-`AuthService` adalah pusat kendali autentikasi. Ia menggunakan **Angular Signals** untuk menyimpan data sesi yang reaktif.
-
-```typescript
-/**
- * AuthService menangani:
- * 1. Login & Logout
- * 2. Penyimpanan token ke LocalStorage (Persistence)
- * 3. Mekanisme Refresh Token bila Access Token kadaluarsa.
- */
-@Injectable({ providedIn: 'root' })
-export class AuthService {
-    private http = inject(HttpClient);
-    private platformId = inject(PLATFORM_ID);
-    private readonly API_URL = '/api/auth'; // Menggunakan path relatif via Proxy
-
-    // State Internal menggunakan Signal
-    private readonly userState = signal<UserState>({
-        isAuthenticated: false,
-        token: null,
-        refreshToken: null,
-        username: null,
-        roles: []
-    });
-
-    // Login Method
-    async login(credentials: LoginRequestDTO): Promise<ApiResponse<LoginData | null>> {
-        try {
-            const response = await firstValueFrom(
-                this.http.post<ApiResponse<LoginData>>(`${this.API_URL}/login`, credentials)
-            );
-
-            if (response.success && response.data) {
-                this.saveState({
-                    isAuthenticated: true,
-                    token: response.data.accessToken,
-                    refreshToken: response.data.refreshToken,
-                    username: response.data.username,
-                    roles: response.data.roles
-                });
-            }
-            return response;
-        } catch (error: any) {
-            // Meneruskan error asli backend (termasuk validasi field)
-            return error.error || { success: false, message: 'Network Error' };
-        }
-    }
-
-    // Refresh Token Method
-    async refreshToken(): Promise<boolean> {
-        const refresh = this.userState().refreshToken;
-        if (!refresh) return false;
-
-        try {
-            const response = await firstValueFrom(
-                this.http.post<ApiResponse<LoginData>>(`${this.API_URL}/refresh`, { refreshToken: refresh })
-            );
-            if (response.success && response.data) {
-                this.saveState({ ...this.userState(), token: response.data.accessToken });
-                return true;
-            }
-            return false;
-        } catch {
-            this.logout();
-            return false;
-        }
-    }
-
-    private saveState(state: UserState) {
-        this.userState.set(state);
-        if (isPlatformBrowser(this.platformId)) {
-            localStorage.setItem('loanova_auth', JSON.stringify(state));
-        }
-    }
-}
-```
-
----
-
-## 4. Middleware Middleware Interceptor (`core/interceptors/auth.interceptor.ts`)
-
-Interceptor bertugas mencegat setiap request HTTP keluar untuk menyisipkan token Authorization.
+File: `src/app/core/services/auth.service.ts`
 
 ```typescript
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const authService = inject(AuthService);
-    const token = authService.getAccessToken();
+// Signal: 'Kotak reaktif' buat nyimpen data user yang lagi login
+private readonly userState = signal<UserState>({ ... });
 
-    // Abaikan endpoint login dan refresh agar tidak terjadi loop
-    if (req.url.includes('/login') || req.url.includes('/refresh')) {
-        return next(req);
-    }
-
-    // Sisipkan Bearer Token
-    let authReq = req;
-    if (token) {
-        authReq = req.clone({ setHeaders: { Authorization: `Bearer ${token}` } });
-    }
-
-    return next(authReq).pipe(
-        catchError((error: HttpErrorResponse) => {
-            // Jika Error 401 (Unauthorized), coba refresh token otomatis
-            if (error.status === 401) {
-                return from(authService.refreshToken()).pipe(
-                    switchMap(success => {
-                        if (success) {
-                            // Ulangi request gagal dengan token baru
-                            const newToken = authService.getAccessToken();
-                            return next(req.clone({ setHeaders: { Authorization: `Bearer ${newToken}` } }));
-                        }
-                        return throwError(() => error);
-                    })
-                );
-            }
-            return throwError(() => error);
+// Method login: Ngirim data ke backend dan pake .pipe(tap(...))
+// tap() itu kayak 'singgah sebentar' buat nyimpen data tanpa ngerubah jalannya data.
+login(credentials: LoginRequestDTO) {
+    return this.http.post(...).pipe(
+        tap(response => {
+           // Simpen ke RAM (Signal) & Simpen ke Storage (LocalStorage)
+           this.saveState(response.data);
         })
     );
-};
+}
 ```
 
 ---
 
-## 5. Implementasi UI Login (`features/auth/login/`)
+## 3. Bedah Kode: Si Satpam (`AuthInterceptor`)
 
-Halaman login bertugas menangkap input user dan menampilkan error yang dikirim oleh backend.
+File: `src/app/core/interceptors/auth.interceptor.ts`
 
-### a. `login.component.ts` (Logika UI)
-Tidak menggunakan validasi client-side yang kaku agar pesan validasi asli dari backend bisa ditampilkan.
+Tugasnya cuma dua:
+1.  **Nempelin Label**: Pas mau kirim data, dia pasang `Authorization: Bearer <token>`.
+2.  **Tuker Kunci**: Kalo server bilang "Token Basi" (Error 401), dia otomatis manggil `refreshToken()` buat minta kunci baru tanpa ganggu user.
 
+---
+
+## 4. Bedah Kode: Si Tampilan (`LoginComponent`)
+
+File: `src/app/features/auth/login/login.component.ts`
+
+Di sini kita pake pola **Subscribe**:
 ```typescript
-export class LoginComponent {
-    readonly username = signal('');
-    readonly password = signal('');
-    readonly errorMessage = signal<string | null>(null);
-    readonly validationErrors = signal<{ [key: string]: string } | null>(null);
-
-    async onSubmit() {
-        this.errorMessage.set(null);
-        this.validationErrors.set(null);
-
-        const result = await this.authService.login({
-            username: this.username(),
-            password: this.password()
-        });
-
-        if (result.success) {
-            this.router.navigate(['/']);
-        } else {
-            this.errorMessage.set(result.message);
-            // Ambil detail error per field (misal: "Username tidak boleh kosong")
-            if (result.code === 400 && result.data?.errors) {
-                this.validationErrors.set(result.data.errors);
-            }
+onSubmit() {
+    this.authService.login(...).subscribe({
+        next: (result) => { 
+           // Kalo sukses, pindah halaman pake router.navigate
+        },
+        error: (err) => {
+           // Kalo error, tampilin pesan error dari backend
         }
-    }
+    });
 }
 ```
 
-### b. `login.component.html` (Template)
-Menggunakan syntax `@if` untuk menampilkan pesan kesalahan secara dinamis.
-
-```html
-<!-- Input Username -->
-<input [ngModel]="username()" (ngModelChange)="username.set($event)" 
-       [class.border-red-400]="getFieldError('username')">
-@if (getFieldError('username')) {
-    <p class="text-red-500"># {{ getFieldError('username') }}</p>
-}
-
-<!-- Tombol Login dengan Status Loading -->
-<button type="submit" [disabled]="isLoading()">
-    {{ isLoading() ? 'Sedang Memproses...' : 'Login ke Sistem' }}
-</button>
-```
+## 5. Kenapa Gak Pakai Validasi Manual di Frontend?
+Karena kita mau **API-Driven UI**. 
+- Kalo backend nambah aturan (misal: password harus ada angka), kita gak perlu ngerubah kode frontend. 
+- Pesan errornya langsung ditarik dari jawaban server. Lebih efisien dan sinkron!
 
 ---
 
-## 6. Pendaftaran Global (`app.config.ts`)
+### Tips Buat Developer:
+- Selalu **restart `ng serve`** kalo kamu ngerubah file `angular.json` atau `proxy.conf.json`.
+- Pake **Angular DevTools** di Chrome buat ngeliat isi `Signals` secara visual.
 
-Langkah terakhir adalah mendaftarkan HTTP Client dan Interceptor agar aktif di seluruh aplikasi.
-
-```typescript
-export const appConfig: ApplicationConfig = {
-  providers: [
-    provideHttpClient(
-      withFetch(), // Untuk performa SSR
-      withInterceptors([authInterceptor]) // Aktifkan Middleware Token
-    ),
-    ...
-  ]
-};
-```
-
----
-**Ingat: Setiap kali mengubah `proxy.conf.json` atau `angular.json`, server `ng serve` harus di-restart!**
+Semangat belajarnya, kodenya sudah full komentar baris-per-baris, silakan diintip! 🚀

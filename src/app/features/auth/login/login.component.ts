@@ -7,100 +7,107 @@ import { AuthService } from '../../../core/services/auth.service';
 /**
  * LOGIN COMPONENT
  * 
- * Mengelola UI Form Login dan interaksi autentikasi dengan backend.
- * Menggunakan arsitektur Standalone (Angular v21+) agar modular dan ringan.
+ * Ini adalah 'Otak' dari tampilan halaman login.
+ * Menangani inputan user, tombol klik, dan nampilin pesan error kusam dari backend.
  */
 @Component({
-    selector: 'app-login',
-    standalone: true,
-    imports: [CommonModule, FormsModule, RouterLink],
+    selector: 'app-login', // Nama tag buat manggil komponen ini
+    standalone: true,      // Pola Angular modern: gak butuh pendaftaran di AppModule
+    imports: [CommonModule, FormsModule, RouterLink], // Modul yang dibutuhin buat form & navigasi
     templateUrl: './login.component.html',
     styleUrl: './login.component.css'
 })
 export class LoginComponent {
-    // Injeksi Dependency menggunakan inject() fungsional
-    private authService = inject(AuthService);
-    private router = inject(Router);
+    // ALAT BANTU (INJEKSI)
+    private authService = inject(AuthService); // Buat manggil login API
+    private router = inject(Router);          // Buat pindah halaman (pindah ke Home)
 
     /**
-     * REACTIVE STATE (Signals)
-     * Menggunakan signal() untuk performa deteksi perubahan yang optimal.
+     * DATA DINAMIS (SIGNALS)
+     * Variabel yang 'hidup' dan nempel ke tampilan HTML.
      */
-    readonly username = signal('');
-    readonly password = signal('');
-    readonly isLoading = signal(false); // Melacak status request API (untuk spinner tombol)
-    readonly errorMessage = signal<string | null>(null); // Pesan error umum (misal: "Kredensial salah")
-    readonly validationErrors = signal<{ [key: string]: string } | null>(null); // Detail error per field dari backend
-    readonly showPassword = signal(false); // Toggle mata mata password
+    readonly username = signal('');           // Tempat nampung ketikan username
+    readonly password = signal('');           // Tempat nampung ketikan password
+    readonly isLoading = signal(false);       // Status lagi nunggu jawaban server (Loading...)
+    readonly errorMessage = signal<string | null>(null); // Pesan error umum (Gagal login)
+    readonly validationErrors = signal<{ [key: string]: string } | null>(null); // Error per kotak (Username kosong)
+    readonly showPassword = signal(false);    // Status mata password (kebuka/ketutup)
 
     /**
-     * ONSUBMIT
-     * Alur: View -> Component -> AuthService -> API Backend -> Response -> UI Update
+     * AKSI TOMBOL LOGIN
+     * Pas tombol 'Masuk' diklik, fungsi ini jalan.
      */
-    async onSubmit() {
-        /**
-         * Langkah 1: Reset State Error
-         * Penting agar pesan lama tidak menempel saat user mencoba lagi.
-         */
+    onSubmit() {
+        // 1. BERSIHIN ERROR LAMA
+        // Biar kalo user nyoba lagi, pesan merah yang tadi ilang dulu.
         this.errorMessage.set(null);
         this.validationErrors.set(null);
 
-        /**
-         * Langkah 2: Aktifkan Loading
-         * Mendisable tombol agar tidak terjadi double-submit.
-         */
+        // 2. NYALAIN SPINNING LOADING
+        // Tombol jadi disable biar gak dipencet berkali-kali.
         this.isLoading.set(true);
 
-        try {
-            /**
-             * Langkah 3: Eksekusi Login via Service
-             * Data dikirim langsung ke backend tanpa validasi client-side yang berlebihan 
-             * agar pesan error asli backend (seperti "Username tidak boleh kosong") bisa muncul.
-             */
-            const result = await this.authService.login({
-                username: this.username(),
-                password: this.password()
-            });
+        /**
+         * 3. PANGGIL API LOGIN (SUBSCRIBE PATTERN)
+         * Kita manggil AuthService.login, lalu kita 'Nunggu' (Subscribe) balesannya.
+         */
+        this.authService.login({
+            username: this.username(),
+            password: this.password()
+        }).subscribe({
+            // Kalo server ngasih jawaban (mau itu sukses atau gagal bisnis)
+            next: (result) => {
+                if (result.success) {
+                    /**
+                     * LOGIN BERHASIL! 
+                     * User kita arahkan (Navigasi) balik ke halaman Beranda.
+                     */
+                    this.router.navigate(['/']);
+                } else {
+                    /**
+                     * LOGIN GAGAL (Kredensial salah atau data kurang)
+                     * Kita ambil pesan 'message' dari API buat dipajang di UI.
+                     */
+                    this.errorMessage.set(result.message);
 
-            /**
-             * Langkah 4: Evaluasi Respons API
-             */
-            if (result.success) {
-                // LOGIN BERHASIL: User diarahkan ke halaman utama.
-                this.router.navigate(['/']);
-            } else {
-                // LOGIN GAGAL: Ambil 'message' umum dari API.
-                this.errorMessage.set(result.message);
-
-                /**
-                 * Langkah 5: Tangani Error Validasi (API Error 400)
-                 * Mengekstrak map error dari field 'data.errors' kiriman backend.
-                 */
-                if (result.code === 400 && result.data && (result.data as any).errors) {
-                    this.validationErrors.set((result.data as any).errors);
+                    // Kalo ada detail error (misal: 'username tidak boleh kosong')
+                    // Kita tangke' p datanya di variabel validationErrors
+                    if (result.code === 400 && result.data && (result.data as any).errors) {
+                        this.validationErrors.set((result.data as any).errors);
+                    }
                 }
+                // Stop loading karena proses udah beres
+                this.isLoading.set(false);
+            },
+            // Kalo koneksi internet putus atau server mati total
+            error: (err) => {
+                const apiError = err.error;
+                if (apiError) {
+                    // Kalo server masih hidup tapi ngirim error response
+                    this.errorMessage.set(apiError.message);
+                    if (apiError.data && apiError.data.errors) {
+                        this.validationErrors.set(apiError.data.errors);
+                    }
+                } else {
+                    // Kalo beneran mati lampu/jaringan error
+                    this.errorMessage.set('Waduh, koneksinya lagi bermasalah atau server lagi tidur.');
+                }
+                this.isLoading.set(false);
             }
-        } catch (err) {
-            // Error Jaringan: Jika server mati atau endpoint tidak ditemukan.
-            this.errorMessage.set('Koneksi bermasalah atau server tidak merespons.');
-        } finally {
-            // Matikan loading apapun hasilnya.
-            this.isLoading.set(false);
-        }
+        });
     }
 
     /**
-     * GET FIELD ERROR
-     * Helper fungsional yang digunakan di template (.html) untuk mengecek 
-     * apakah suatu field memiliki pesan error spesifik dari backend.
+     * HELPER: AMBIL ERROR KOTAK INPUT
+     * Dipake di HTML buat ngecek: 'Kotak username ada merahnya gak?'
      */
     getFieldError(field: string): string | undefined {
         return this.validationErrors()?.[field];
     }
 
     /**
-     * TOGGLE PASSWORD
-     * Mengubah state visibilitas password secara reaktif.
+     * AKSI MATA PASSWORD
+     * Tombol buat ngeliatin/nyembunyiin teks password.
      */
     togglePassword() {
         this.showPassword.update(v => !v);
