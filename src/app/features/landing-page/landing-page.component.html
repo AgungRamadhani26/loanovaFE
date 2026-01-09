@@ -1,0 +1,413 @@
+<main class="overflow-x-hidden">
+
+    <!-- Section 1: Hero Banner - Bagian pertama yang dilihat pengguna -->
+    <section class="relative min-h-[90vh] flex items-center pt-20 bg-slate-50 overflow-hidden">
+        <!-- Elemen Dekoratif: Lingkaran cahaya blur di background -->
+        <div class="absolute inset-0 z-0 opacity-20 pointer-events-none">
+            <div class="absolute -top-24 -left-24 w-96 h-96 bg-blue-400 rounded-full blur-[100px]"></div>
+            <div class="absolute top-1/2 -right-24 w-80 h-80 bg-blue-600 rounded-full blur-[100px]"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Kolom Kiri: Teks Headline dan CTA -->
+                <div class="animate-in fade-in slide-in-from-left duration-1000">
+                    <h1 class="text-3xl lg:text-5xl font-extrabold text-blue-950 leading-[1.1] mb-6">
+                        Ajukan Pinjaman dengan <span
+                            class="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-blue-500">Mudah,
+                            Aman, dan Transparan</span>
+                    </h1>
+                    <p class="text-xl text-slate-600 mb-10 leading-relaxed font-medium">
+                        Solusi finansial masa depan dengan teknologi verifikasi tercanggih. Proses 100% online, bunga
+                        kompetitif, dan pencairan super cepat.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button
+                            class="px-8 py-4 bg-blue-700 text-white rounded-full font-bold text-lg shadow-xl shadow-blue-200 hover:bg-blue-800 hover:scale-105 active:scale-95 transition-all">
+                            Ajukan Pinjaman Sekarang
+                        </button>
+                        <a href="#simulator"
+                            class="px-8 py-4 bg-white text-blue-800 border-2 border-blue-100 rounded-full font-bold text-lg hover:bg-blue-50 hover:border-blue-200 transition-all text-center">
+                            Lihat Simulasi Kredit
+                        </a>
+                    </div>
+
+                    <!-- Social Proof: Menampilkan jumlah nasabah dan rating -->
+                    <div class="mt-12 flex items-center gap-6">
+                        <div class="flex -space-x-3">
+                            <div class="w-12 h-12 rounded-full border-4 border-white bg-slate-200 overflow-hidden"><img
+                                    src="https://i.pravatar.cc/150?u=1" alt="avatar"></div>
+                            <div class="w-12 h-12 rounded-full border-4 border-white bg-slate-200 overflow-hidden"><img
+                                    src="https://i.pravatar.cc/150?u=2" alt="avatar"></div>
+                            <div class="w-12 h-12 rounded-full border-4 border-white bg-slate-200 overflow-hidden"><img
+                                    src="https://i.pravatar.cc/150?u=3" alt="avatar"></div>
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1 text-yellow-500">
+                                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">Dipercaya oleh 10,000+ Nasabah</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kolom Kanan: Gambar Ilustrasi Hero -->
+                <div class="relative animate-in fade-in zoom-in duration-1000 flex justify-center">
+                    <div class="relative w-full aspect-square max-w-[500px]">
+                        <img src="assets/images/hero_banner.png" alt="Loanova UI"
+                            class="rounded-[40px] shadow-2xl shadow-blue-900/30 object-cover w-full h-full border-8 border-white/50 backdrop-blur-sm">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Keunggulan Produk - Menjelaskan USP (Unique Selling Point) -->
+    <section class="py-24 bg-white" id="tentang">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-16">
+            <span class="text-blue-600 font-bold tracking-widest uppercase text-sm">Kenapa Memilih Kami?</span>
+            <h2 class="text-4xl font-bold text-slate-900 mt-4 mb-6">Nikmati Keunggulan Aplikasi Loanova</h2>
+            <p class="text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed">Kami berdedikasi untuk memberikan
+                pengalaman finansial terbaik bagi setiap nasabah kami dengan standar keamanan kelas dunia.</p>
+        </div>
+
+        <!-- Grid feature cards -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div
+                class="p-8 rounded-3xl bg-blue-50 border border-transparent hover:border-blue-200 hover:bg-white hover:shadow-xl transition-all group">
+                <div
+                    class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mb-8 shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+                    📱</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Proses 100% Online</h3>
+                <p class="text-slate-600 font-medium leading-relaxed">Pengajuan hingga persetujuan dilakukan sepenuhnya
+                    melalui aplikasi. Tanpa perlu tatap muka.</p>
+            </div>
+            <div
+                class="p-8 rounded-3xl bg-blue-50 border border-transparent hover:border-blue-200 hover:bg-white hover:shadow-xl transition-all group">
+                <div
+                    class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mb-8 shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+                    ⚡</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Persetujuan Cepat</h3>
+                <p class="text-slate-600 font-medium leading-relaxed">Teknologi verifikasi cerdas kami memungkinkan
+                    proses persetujuan dalam hitungan menit saja.</p>
+            </div>
+            <div
+                class="p-8 rounded-3xl bg-blue-50 border border-transparent hover:border-blue-200 hover:bg-white hover:shadow-xl transition-all group">
+                <div
+                    class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mb-8 shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+                    🔒</div>
+                <h3 class="text-xl font-bold text-slate-900 mb-4">Keamanan Data</h3>
+                <p class="text-slate-600 font-medium leading-relaxed">Data Anda dilindungi enkripsi tingkat perbankan
+                    dan diawasi oleh OJK untuk kenyamanan Anda.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: Daftar Plafon - Menampilkan pilihan paket pinjaman -->
+    <section class="py-24 bg-slate-50" id="plafonds">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-16">
+            <h2 class="text-4xl font-bold text-slate-900 mb-4">Pilih Plafon Sesuai Kebutuhan</h2>
+            <p class="text-slate-500 max-w-2xl mx-auto font-medium">Banyak pilihan plafon yang bisa Anda sesuaikan
+                dengan profil finansial Anda.</p>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Paket Bronze -->
+            <div
+                class="bg-white p-8 rounded-[32px] shadow-lg border border-slate-100 hover:border-blue-300 transition-all flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center text-4xl mb-6">🥉</div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">Plafon Bronze</h3>
+                <p class="text-slate-500 mb-8 font-medium">Cocok untuk kebutuhan mendesak skala kecil.</p>
+                <div class="w-full space-y-4 mb-10 text-left bg-slate-50 p-6 rounded-2xl">
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Max Amount</span> <span
+                            class="text-blue-700">Rp 5.000.000</span></div>
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Bunga</span> <span
+                            class="text-blue-700">0.05% / hari</span></div>
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Tenor</span> <span
+                            class="text-blue-700">1 - 3 Bulan</span></div>
+                </div>
+            </div>
+
+            <!-- Paket Silver (Highlighed) -->
+            <div
+                class="bg-white p-8 rounded-[32px] shadow-2xl border-4 border-blue-600 scale-105 relative z-10 flex flex-col items-center text-center">
+                <div
+                    class="absolute -top-5 bg-blue-600 text-white px-6 py-1 rounded-full text-sm font-bold tracking-widest uppercase">
+                    Populer</div>
+                <div class="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-4xl mb-6">🥈</div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">Plafon Silver</h3>
+                <p class="text-slate-500 mb-8 font-medium">Pilihan favorit untuk gaya hidup dinamis.</p>
+                <div class="w-full space-y-4 mb-10 text-left bg-blue-50 p-6 rounded-2xl">
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Max Amount</span> <span
+                            class="text-blue-700">Rp 20.000.000</span></div>
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Bunga</span> <span
+                            class="text-blue-700">1.2% / bulan</span></div>
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Tenor</span> <span
+                            class="text-blue-700">3 - 12 Bulan</span></div>
+                </div>
+            </div>
+
+            <!-- Paket Gold -->
+            <div
+                class="bg-white p-8 rounded-[32px] shadow-lg border border-slate-100 hover:border-blue-300 transition-all flex flex-col items-center text-center">
+                <div class="w-20 h-20 bg-yellow-50 rounded-full flex items-center justify-center text-4xl mb-6">🥇</div>
+                <h3 class="text-2xl font-bold text-slate-900 mb-2">Plafon Gold</h3>
+                <p class="text-slate-500 mb-8 font-medium">Solusi pinjaman besar untuk usaha Anda.</p>
+                <div class="w-full space-y-4 mb-10 text-left bg-slate-50 p-6 rounded-2xl">
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Max Amount</span> <span
+                            class="text-blue-700">Rp 100.000.000</span></div>
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Bunga</span> <span
+                            class="text-blue-700">0.9% / bulan</span></div>
+                    <div class="flex justify-between font-bold"><span class="text-slate-500">Tenor</span> <span
+                            class="text-blue-700">12 - 36 Bulan</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: Simulator Section - Fitur paling interaktif di Landing Page -->
+    <section class="py-24 bg-blue-900 text-white relative overflow-hidden" id="simulator">
+        <div class="absolute inset-0 opacity-10 pointer-events-none">
+            <svg class="h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path d="M0 100 C 20 0 50 0 100 100 Z" fill="currentColor"></path>
+            </svg>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-20 items-center">
+                <div>
+                    <h2 class="text-4xl font-bold mb-6">Simulasi Kredit Modern</h2>
+                    <p class="text-blue-100 mb-10 text-lg leading-relaxed font-medium">Hitung estimasi pengembalian Anda
+                        dengan transparan. Tanpa biaya tersembunyi, semua rincian tampil di awal.</p>
+
+                    <!-- Slider inputs with bidirectional binding to signals -->
+                    <div class="space-y-8">
+                        <div>
+                            <div class="flex justify-between mb-4 font-bold">
+                                <span>Jumlah Pinjaman</span>
+                                <!-- Menampilkan nilai signal amount dalam format angka rupiah -->
+                                <span class="text-2xl text-blue-300">Rp {{ amount() | number }}</span>
+                            </div>
+                            <!-- Input Range: Terhubung langsung ke signal 'amount' -->
+                            <input type="range"
+                                class="w-full h-3 bg-blue-800 rounded-lg appearance-none cursor-pointer accent-white"
+                                min="1000000" max="100000000" step="1000000" [ngModel]="amount()"
+                                (ngModelChange)="amount.set($event)">
+                            <div class="flex justify-between mt-2 text-xs font-bold text-blue-400">
+                                <span>Rp 1 Juta</span>
+                                <span>Rp 100 Juta</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between mb-4 font-bold">
+                                <span>Tenor (Bulan)</span>
+                                <!-- Menampilkan nilai signal months -->
+                                <span class="text-2xl text-blue-300">{{ months() }} Bulan</span>
+                            </div>
+                            <!-- Input Range: Terhubung langsung ke signal 'months' -->
+                            <input type="range"
+                                class="w-full h-3 bg-blue-800 rounded-lg appearance-none cursor-pointer accent-white"
+                                min="3" max="36" step="3" [ngModel]="months()" (ngModelChange)="months.set($event)">
+                            <div class="flex justify-between mt-2 text-xs font-bold text-blue-400">
+                                <span>3 Bulan</span>
+                                <span>36 Bulan</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Card: Menampilkan hasil kalkulasi (computed signals) -->
+                <div class="bg-white text-slate-900 p-10 rounded-[40px] shadow-2xl shadow-blue-950/50 scale-105">
+                    <h3 class="text-xl font-bold mb-8 border-b border-slate-100 pb-4">Ringkasan Estimasi</h3>
+                    <div class="space-y-6">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 font-medium">Bunga Tahunan (Estimasi)</span>
+                            <span class="font-bold">12%</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 font-medium">Total Bunga</span>
+                            <span class="font-bold">Rp {{ interest() | number }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500 font-medium">Total Pengembalian</span>
+                            <span class="font-bold">Rp {{ total() | number }}</span>
+                        </div>
+                        <!-- Angsuran Bulanan: Hasil akhir kalkulasi -->
+                        <div class="pt-6 border-t border-slate-100">
+                            <p class="text-sm font-bold text-slate-400 uppercase tracking-tighter mb-1">Angsuran / Bulan
+                            </p>
+                            <p class="text-5xl font-black text-blue-700">Rp {{ monthly() | number }}</p>
+                        </div>
+                        <button
+                            class="w-full py-5 bg-blue-700 text-white rounded-2xl font-black text-xl hover:bg-blue-800 hover:scale-[1.02] shadow-xl shadow-blue-100 transition-all uppercase mt-4">
+                            Ajukan Sekarang
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Trust & Security - Memperkuat kepercayaan nasabah -->
+    <section class="py-24 bg-slate-50 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div
+                class="bg-blue-700 rounded-[48px] p-12 lg:p-20 text-white relative overflow-hidden shadow-2xl shadow-blue-200">
+                <div class="absolute top-0 right-0 w-1/3 h-full bg-blue-600/50 skew-x-12 translate-x-20"></div>
+
+                <div class="relative z-10 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                    <div>
+                        <span
+                            class="inline-block px-4 py-1 rounded-full bg-blue-600 text-sm font-bold tracking-widest uppercase mb-6">Keamanan
+                            Tingkat Tinggi</span>
+                        <h2 class="text-4xl lg:text-5xl font-black mb-8 leading-tight">Data dan Transaksi Anda Aman
+                            Bersama Kami</h2>
+                        <p class="text-blue-100 text-lg font-medium leading-relaxed mb-10">
+                            Loanova menggunakan teknologi enkripsi AES-256 bit dan sistem verifikasi dua faktor (2FA)
+                            untuk memastikan setiap data nasabah terlindungi secara maksimal.
+                        </p>
+                        <div class="space-y-6">
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                                    🛡️</div>
+                                <div>
+                                    <h4 class="font-bold text-xl">Sistem Keamanan Berstandar</h4>
+                                    <p class="text-blue-200 text-sm font-medium">Layanan kami telah tersertifikasi ISO
+                                        27001 untuk Sistem Manajemen Keamanan Informasi.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                                    🤝</div>
+                                <div>
+                                    <h4 class="font-bold text-xl">Perlindungan Data Nasabah</h4>
+                                    <p class="text-blue-200 text-sm font-medium">Privasi Anda adalah prioritas kami.
+                                        Kami tidak pernah membagikan data Anda tanpa izin.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shrink-0">
+                                    ⚖️</div>
+                                <div>
+                                    <h4 class="font-bold text-xl">Kepatuhan Regulasi</h4>
+                                    <p class="text-blue-200 text-sm font-medium">Terdaftar dan diawasi oleh OJK serta
+                                        mematuhi hukum perlindungan konsumen di Indonesia.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Badges -->
+                    <div class="flex flex-col items-center justify-center text-center">
+                        <div class="grid grid-cols-2 gap-8">
+                            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+                                <p class="text-4xl mb-2">🔒</p>
+                                <p class="font-bold text-blue-100 uppercase tracking-widest text-xs">SSL Encryption</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+                                <p class="text-4xl mb-2">🇮🇩</p>
+                                <p class="font-bold text-blue-100 uppercase tracking-widest text-xs">OJK Supervised</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+                                <p class="text-4xl mb-2">☁️</p>
+                                <p class="font-bold text-blue-100 uppercase tracking-widest text-xs">Cloud Security</p>
+                            </div>
+                            <div class="bg-white/10 backdrop-blur-md p-8 rounded-3xl border border-white/20">
+                                <p class="text-4xl mb-2">🛡️</p>
+                                <p class="font-bold text-blue-100 uppercase tracking-widest text-xs">Data Protected</p>
+                            </div>
+                        </div>
+                        <div class="mt-12">
+                            <p class="text-blue-300 font-bold italic">"Trusted by major financial institutions in SE
+                                Asia"</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Alur Pengajuan - Langkah-langkah menggunakan kontrol flow @for -->
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-slate-900 mb-4">Mudahnya Mengajukan di Loanova</h2>
+                <p class="text-slate-500 font-medium">Hanya dengan 5 langkah sederhana, dana impian Anda cair.</p>
+            </div>
+
+            <!-- Stepper area -->
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 relative">
+                <!-- Connecting line decoration -->
+                <div
+                    class="hidden md:block absolute top-12 left-1/2 -translate-x-1/2 w-4/5 h-0.5 border-t-2 border-dashed border-slate-200 -z-0">
+                </div>
+
+                <!-- Loop menggunakan Modern Angular @for -->
+                @for (step of steps; track step.title; let i = $index) {
+                <div class="flex flex-col items-center text-center relative z-10 group px-4">
+                    <div
+                        class="w-16 h-16 bg-white border-4 border-slate-100 rounded-full flex items-center justify-center text-xl font-bold text-blue-700 mb-6 group-hover:border-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-lg shadow-slate-100 group-hover:shadow-blue-200">
+                        {{ i + 1 }}
+                    </div>
+                    <h4 class="font-extrabold text-slate-900 mb-2">{{ step.title }}</h4>
+                    <p class="text-xs text-slate-500 leading-relaxed font-bold">{{ step.desc }}</p>
+                </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Fitur Utama - Ringkasan fitur tambahan -->
+    <section class="py-24 bg-slate-900 text-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Fitur Unggulan Loanova</h2>
+                <p class="text-slate-400 font-medium">Teknologi pendukung yang memudahkan pengelolaan finansial Anda.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div
+                    class="p-8 bg-slate-800/50 rounded-3xl border border-slate-700 hover:bg-slate-800 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-lg shadow-blue-900/20 group-hover:scale-110 transition-transform">
+                        📊</div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Simulasi Pinjaman</h4>
+                    <p class="text-slate-400 text-sm font-medium leading-relaxed">Hitung angsuran secara real-time
+                        dengan transparansi bunga penuh di dashboard Anda.</p>
+                </div>
+                <div
+                    class="p-8 bg-slate-800/50 rounded-3xl border border-slate-700 hover:bg-slate-800 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-lg shadow-blue-900/20 group-hover:scale-110 transition-transform">
+                        📍</div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Tracking Status</h4>
+                    <p class="text-slate-400 text-sm font-medium leading-relaxed">Pantau perkembangan pengajuan Anda
+                        langkah demi langkah langsung dari aplikasi.</p>
+                </div>
+                <div
+                    class="p-8 bg-slate-800/50 rounded-3xl border border-slate-700 hover:bg-slate-800 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-lg shadow-blue-900/20 group-hover:scale-110 transition-transform">
+                        📁</div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Upload Online</h4>
+                    <p class="text-slate-400 text-sm font-medium leading-relaxed">Unggah dokumen KTP dan bukti
+                        penghasilan dengan aman lewat enkripsi file tercanggih.</p>
+                </div>
+                <div
+                    class="p-8 bg-slate-800/50 rounded-3xl border border-slate-700 hover:bg-slate-800 transition-all group">
+                    <div
+                        class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-2xl mb-6 shadow-lg shadow-blue-900/20 group-hover:scale-110 transition-transform">
+                        🔔</div>
+                    <h4 class="text-xl font-bold mb-3 text-white">Notifikasi Real-time</h4>
+                    <p class="text-slate-400 text-sm font-medium leading-relaxed">Dapatkan pembaruan status pinjaman
+                        melalui notifikasi push dan email secara instan.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
