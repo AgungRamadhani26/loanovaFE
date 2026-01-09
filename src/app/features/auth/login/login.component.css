@@ -1,0 +1,8 @@
+/* Styles khusus login jika diperlukan diluar Tailwind */
+:host {
+    display: block;
+}
+
+input[type="checkbox"] {
+    accent-color: #1d4ed8;
+}

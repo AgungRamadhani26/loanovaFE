@@ -48,5 +48,11 @@ Proses ini dilakukan dengan membangun beberapa section utama:
 - Pengujian responsivitas di layar mobile dan desktop.
 - Pembersihan file-file lama yang sudah didegradasi (sampah file refactor).
 
+## 7. Implementasi Modul Autentikasi (Login)
+- **Manajemen Role**: Pendefinisian 5 Role utama (Customer, Super Admin, Branch Manager, Marketing, Backoffice).
+- **Pembatasan Platform**: Penambahan logika di `AuthService` untuk membatasi role CUSTOMER agar hanya bisa login melalui Android (sesuai kebutuhan bisnis).
+- **UI Login Premium**: Desain form login yang konsisten dengan tema warna Landing Page (Navy/Blue) lengkap dengan fitur *show/hide password* dan state loading.
+- **Modern State Management**: Menggunakan Angular Signals untuk mengelola state user di seluruh aplikasi secara reaktif dan ringan.
+
 ---
 **Dokumentasi ini dibuat untuk memudahkan tim memahami cara kerja aplikasi Loanova dari nol.**
