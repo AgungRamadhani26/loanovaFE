@@ -1,0 +1,8 @@
+:host {
+    display: block;
+}
+
+/* Ensure smooth transition for main content when sidebar toggles (if added later) */
+main {
+    transition: padding 0.3s ease-in-out;
+}

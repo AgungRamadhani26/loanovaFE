@@ -60,9 +60,9 @@ export class LoginComponent {
                 if (result.success) {
                     /**
                      * LOGIN BERHASIL! 
-                     * User kita arahkan (Navigasi) balik ke halaman Beranda.
+                     * User kita arahkan (Navigasi) langsung ke area Dashboard Admin.
                      */
-                    this.router.navigate(['/']);
+                    this.router.navigate(['/admin/dashboard']);
                 } else {
                     /**
                      * LOGIN GAGAL (Kredensial salah atau data kurang)
