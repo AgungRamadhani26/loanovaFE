@@ -38,7 +38,19 @@ export class HeaderComponent {
      * Memanggil fungsi logout di service dan mengarahkan ke halaman login.
      */
     onLogout() {
-        this.authService.logout();
-        this.router.navigate(['/auth/login']);
+        this.authService.logout().subscribe({
+            next: (response) => {
+                if (response.success) {
+                    // Logout berhasil, arahkan ke halaman login
+                    this.router.navigate(['/auth/login']);
+                }
+            },
+            error: (err) => {
+                console.error('Logout error:', err);
+                // Meskipun error, tetap bersihkan state lokal dan redirect
+                this.authService.clearAuthState();
+                this.router.navigate(['/auth/login']);
+            }
+        });
     }
 }

@@ -124,9 +124,29 @@ export class AuthService {
 
     /**
      * LOGOUT
-     * Gunanya buat 'nge-reset' semuanya jadi kosong lagi.
+     * Memanggil API logout backend untuk invalidasi token di server, 
+     * kemudian membersihkan state lokal (signal & localStorage).
      */
-    logout() {
+    logout(): Observable<ApiResponse<null>> {
+        const currentRefreshToken = this.userState().refreshToken;
+        
+        // Kirim request logout ke backend dengan refreshToken di body
+        return this.http.post<ApiResponse<null>>(`${this.API_URL}/logout`, {
+            refreshToken: currentRefreshToken
+        }).pipe(
+            tap(() => {
+                // Setelah logout berhasil di backend, bersihkan state lokal
+                this.clearAuthState();
+            })
+        );
+    }
+
+    /**
+     * CLEAR AUTH STATE (HELPER)
+     * Membersihkan seluruh state autentikasi dari memory dan localStorage.
+     * Dipanggil setelah logout atau saat token tidak valid.
+     */
+    clearAuthState() {
         // 1. Kosongin Signal (UI bakal otomatis balik ke tampilan Guest)
         this.userState.set({
             isAuthenticated: false,

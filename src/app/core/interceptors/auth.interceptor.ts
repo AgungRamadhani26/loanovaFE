@@ -5,7 +5,7 @@ import { AuthService } from '../services/auth.service';
 
 /**
  * AUTH INTERCEPTOR
- * 
+ *
  * Bayangkan ini sebagai 'Pintu Gerbang' atau 'Satpam' aplikasi.
  * Setiap ada data yang mau keluar (Request) atau mau masuk (Response), dia yang periksa.
  */
@@ -23,7 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
 
     /**
      * LANGKAH 1: PASANG TOKEN (REQUEST)
-     * Kalo kita punya token dan alamatnya BUKAN alamat login, 
+     * Kalo kita punya token dan alamatnya BUKAN alamat login,
      * kita masukkan token tersebut ke 'Header' paket data kita.
      */
     if (token && !shouldSkip) {
@@ -83,13 +83,13 @@ function handle401Error(req: HttpRequest<unknown>, next: HttpHandlerFn, authServ
                 return next(retryReq);
             } else {
                 // Kalo usaha refresh gagal juga (misal: RefreshToken juga abis masanya)
-                authService.logout(); // Paksa keluar
+                authService.clearAuthState(); // Paksa keluar
                 return throwError(() => new Error('Sesi sudah habis, silakan login ulang.'));
             }
         }),
         catchError((err) => {
             // Kalo koneksi putus pas lagi refresh
-            authService.logout();
+            authService.clearAuthState();
             return throwError(() => err);
         })
     );
