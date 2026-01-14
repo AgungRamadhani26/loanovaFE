@@ -1,5 +1,6 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 
@@ -12,6 +13,8 @@ import { AuthService } from '../services/auth.service';
 export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, next: HttpHandlerFn) => {
     // 1. Kita panggil 'Kunci' (Token) dari AuthService
     const authService = inject(AuthService);
+    const platformId = inject(PLATFORM_ID);
+    const isBrowser = isPlatformBrowser(platformId);
     const token = authService.getAccessToken();
 
     // 2. TENTUKAN ALAMAT YANG GAK PERLU TOKEN
@@ -47,8 +50,13 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
              * Kalo server bilang 401, artinya 'AccessToken kamu sudah basi/kadaluarsa'.
              */
             if (error.status === 401 && !shouldSkip) {
-                // Panggil bantuan buat refresh kuncinya secara otomatis!
-                return handle401Error(authReq, next, authService);
+                // HANYA COBA REFRESH JIKA: di Browser DAN punta refreshToken
+                if (isBrowser && authService.hasRefreshToken()) {
+                    return handle401Error(authReq, next, authService);
+                }
+
+                // Jika tidak, langsung bersihkan state & lempar error
+                authService.clearAuthState();
             }
             // Kalo errornya bukan 401 (misal error 500), kita lempar aja ke UI biar UI yang handle.
             return throwError(() => error);

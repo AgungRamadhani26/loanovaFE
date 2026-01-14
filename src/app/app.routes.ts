@@ -4,6 +4,7 @@ import { LoginComponent } from './features/auth/login/login.component';
 import { MainLayoutComponent } from './layout/shared/main-layout.component';
 import { AdminLayoutComponent } from './layout/admin/admin-layout/admin-layout.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
+import { UserListComponent } from './features/users/user-list.component';
 
 /**
  * Konfigurasi Routing Aplikasi
@@ -39,7 +40,7 @@ export const routes: Routes = [
              * PLACEHOLDER UNTUK MENU LAIN
              * Nantinya setiap menu ini akan punya komponen masing-masing.
              */
-            { path: 'users', component: DashboardComponent },
+            { path: 'users', component: UserListComponent },
             { path: 'branches', component: DashboardComponent },
             { path: 'roles', component: DashboardComponent },
             { path: 'loans', component: DashboardComponent },

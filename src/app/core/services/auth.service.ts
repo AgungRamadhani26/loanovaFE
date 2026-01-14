@@ -9,6 +9,7 @@ import { UserState } from '../models/user-state.model';
 import { LoginRequestDTO } from '../models/request/login-request.model';
 import { ApiResponse } from '../models/response/api-response.model';
 import { LoginData } from '../models/response/login-response.model';
+import { StorageUtil } from '../utils/storage-util';
 
 /**
  * AUTH SERVICE
@@ -54,18 +55,11 @@ export class AuthService {
          * Pas aplikasi pertama kali dibuka (di refresh), kita cek di 'lemari' (LocalStorage)
          * apakah ada data login yang tertinggal dari sesi sebelumnya.
          */
-        if (isPlatformBrowser(this.platformId)) { // Cek: Apakah kita di Browser? (LocalStorage cuma ada di browser)
-            const savedAuth = localStorage.getItem('loanova_auth');
-            if (savedAuth) {
-                try {
-                    // Kalo ada, kita 'bongkar' JSON-nya jadi objek
-                    const authData = JSON.parse(savedAuth);
-                    // Kita masukkin balik datanya ke Signal biar aplikasi tau kita udah login
-                    this.userState.set({ ...authData, isAuthenticated: true });
-                } catch (e) {
-                    // Kalo datanya rusak/gak valid, kita bersihin aja
-                    localStorage.removeItem('loanova_auth');
-                }
+        if (isPlatformBrowser(this.platformId)) {
+            // Kita gunakan StorageUtil yang sudah di-enkripsi AES
+            const authData = StorageUtil.getItem<any>('loanova_auth');
+            if (authData) {
+                this.userState.set({ ...authData, isAuthenticated: true });
             }
         }
     }
@@ -129,7 +123,7 @@ export class AuthService {
      */
     logout(): Observable<ApiResponse<null>> {
         const currentRefreshToken = this.userState().refreshToken;
-        
+
         // Kirim request logout ke backend dengan refreshToken di body
         return this.http.post<ApiResponse<null>>(`${this.API_URL}/logout`, {
             refreshToken: currentRefreshToken
@@ -157,7 +151,7 @@ export class AuthService {
         });
         // 2. Buang token dari LocalStorage biar pas di refresh gak login otomatis lagi
         if (isPlatformBrowser(this.platformId)) {
-            localStorage.removeItem('loanova_auth');
+            StorageUtil.removeItem('loanova_auth');
         }
     }
 
@@ -171,8 +165,8 @@ export class AuthService {
 
         // 2. Simpen ke Browser Storage (Biar kalo di refresh tetep login)
         if (isPlatformBrowser(this.platformId)) {
-            const { isAuthenticated, ...saveData } = state; // Gak perlu simpen flag 'isAuthenticated' biar lebih rapi
-            localStorage.setItem('loanova_auth', JSON.stringify(saveData));
+            const { isAuthenticated, ...saveData } = state;
+            StorageUtil.setItem('loanova_auth', saveData);
         }
     }
 
@@ -182,5 +176,19 @@ export class AuthService {
      */
     getAccessToken(): string | null {
         return this.userState().token;
+    }
+
+    /**
+     * AMBIL REFRESH TOKEN (GETTER)
+     */
+    getRefreshToken(): string | null {
+        return this.userState().refreshToken;
+    }
+
+    /**
+     * CEK APAKAH PUNYA REFRESH TOKEN
+     */
+    hasRefreshToken(): boolean {
+        return !!this.userState().refreshToken;
     }
 }

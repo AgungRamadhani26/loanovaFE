@@ -1,0 +1,221 @@
+<div class="user-management-container">
+    <!-- HEADER SECTION -->
+    <div class="header-section">
+        <div class="title-wrapper">
+            <h1 class="page-title">User Management</h1>
+            <p class="page-subtitle">Manage and monitor application users, roles, and access status.</p>
+        </div>
+        <div class="action-wrapper">
+            <button class="btn-primary">
+                <span class="material-icons-outlined">person_add</span>
+                <span>Add New User</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-100 text-blue-600">
+                <span class="material-icons-outlined">people</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ users().length }}</span>
+                <span class="stat-label">Total Users</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-green-100 text-green-600">
+                <span class="material-icons-outlined">check_circle</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ activeUserCount() }}</span>
+                <span class="stat-label">Active Users</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-purple-100 text-purple-600">
+                <span class="material-icons-outlined">admin_panel_settings</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ adminCount() }}</span>
+                <span class="stat-label">Administrators</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="table-card shadow-sm border border-slate-200">
+        <!-- Search & Filter Bar -->
+        <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
+            <div class="search-box">
+                <span class="material-icons-outlined">search</span>
+                <input type="text" placeholder="Search by username, email, branch, or roles..."
+                    [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-secondary" (click)="toggleFilter()" [class.active-filter]="isFilterVisible()">
+                    <span class="material-icons-outlined">filter_list</span>
+                    <span>Filter</span>
+                </button>
+                <button class="btn-icon" (click)="loadUsers()">
+                    <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- EXPANDABLE FILTER PANEL -->
+        @if (isFilterVisible()) {
+        <div
+            class="filter-panel p-6 bg-slate-50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-end animate-slide-down">
+            <div class="filter-group">
+                <label class="filter-label">Branch</label>
+                <select class="filter-select" [ngModel]="selectedBranch()"
+                    (ngModelChange)="selectedBranch.set($event); onFilterChange()">
+                    @for (branch of availableBranches(); track branch) {
+                    <option [value]="branch">{{ branch === 'ALL' ? 'All Branches' : branch }}</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Role</label>
+                <select class="filter-select" [ngModel]="selectedRole()"
+                    (ngModelChange)="selectedRole.set($event); onFilterChange()">
+                    @for (role of availableRoles(); track role) {
+                    <option [value]="role">{{ role === 'ALL' ? 'All Roles' : role }}</option>
+                    }
+                </select>
+            </div>
+            <div class="filter-group">
+                <label class="filter-label">Status</label>
+                <select class="filter-select" [ngModel]="selectedStatus()"
+                    (ngModelChange)="selectedStatus.set($event); onFilterChange()">
+                    <option value="ALL">All Status</option>
+                    <option value="ACTIVE">Active Only</option>
+                    <option value="INACTIVE">Inactive Only</option>
+                </select>
+            </div>
+            <div class="filter-group flex gap-2">
+                <button class="btn-reset flex-1" (click)="resetFilters()">
+                    <span class="material-icons-outlined text-sm">restart_alt</span>
+                    <span>Reset</span>
+                </button>
+                <button class="btn-close-filter" (click)="toggleFilter()">
+                    <span class="material-icons-outlined text-sm">close</span>
+                </button>
+            </div>
+        </div>
+        }
+
+        <!-- Table Content -->
+        <div class="table-responsive">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th class="text-center" style="width: 50px;">NO</th>
+                        <th>USER INFO</th>
+                        <th>BRANCH</th>
+                        <th>ROLES</th>
+                        <th>STATUS</th>
+                        <th class="text-right">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (isLoading()) {
+                    @for (i of [1,2,3,4,5]; track i) {
+                    <tr class="skeleton-row">
+                        <td colspan="6">
+                            <div class="skeleton-bar" [style.width.%]="80 + (i * 2)"></div>
+                        </td>
+                    </tr>
+                    }
+                    } @else if (filteredUsers().length === 0) {
+                    <tr>
+                        <td colspan="6" class="empty-state">
+                            <div class="empty-content text-center py-20">
+                                <span class="material-icons-outlined text-5xl text-slate-300">person_off</span>
+                                <p class="mt-4 text-slate-500 font-medium">No users found matching your criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    } @else {
+                    @for (user of paginatedUsers(); track user.id; let i = $index) {
+                    <tr class="hover:bg-slate-50/50 transition-colors text-sm">
+                        <td class="text-center font-bold text-slate-400">
+                            {{ (currentPage() - 1) * pageSize() + i + 1 }}
+                        </td>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-avatar"
+                                    [style.background-color]="'hsl(' + (user.id * 137 % 360) + ', 70%, 95%)'"
+                                    [style.color]="'hsl(' + (user.id * 137 % 360) + ', 70%, 30%)'">
+                                    {{ user.username.substring(0, 2).toUpperCase() }}
+                                </div>
+                                <div class="user-details">
+                                    <span class="username">{{ user.username }}</span>
+                                    <span class="email">{{ user.email }}</span>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="branch-tag" [class.no-branch]="!user.branchCode">
+                                {{ user.branchCode || 'No Branch' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="role-tags">
+                                @for (role of user.roles; track role) {
+                                <span class="role-badge" [attr.data-role]="role">
+                                    {{ role }}
+                                </span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            <span class="status-badge" [class.active]="user.isActive">
+                                {{ user.isActive ? 'Active' : 'Inactive' }}
+                            </span>
+                        </td>
+                        <td class="text-right">
+                            <div class="flex justify-end gap-2">
+                                <button class="btn-icon-sm" title="Edit User">
+                                    <span class="material-icons-outlined">edit</span>
+                                </button>
+                                <button class="btn-icon-sm text-red-500" title="Delete User">
+                                    <span class="material-icons-outlined">delete</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Table Footer (Pagination) -->
+        <div class="table-footer p-6 bg-slate-50/50 border-t border-slate-100 rounded-b-2xl">
+            <span class="text-sm text-slate-500">
+                Showing <b>{{ showingFrom() }}</b> to
+                <b>{{ showingTo() }}</b> of
+                <b>{{ filteredUsers().length }}</b> users
+            </span>
+
+            <div class="pagination">
+                <button class="btn-pagination" (click)="prevPage()" [disabled]="currentPage() === 1">
+                    <span class="material-icons-outlined">chevron_left</span>
+                </button>
+
+                @for (p of pages(); track p) {
+                <button class="btn-pagination" [class.active]="currentPage() === p" (click)="setPage(p)">
+                    {{ p }}
+                </button>
+                }
+
+                <button class="btn-pagination" (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+                    <span class="material-icons-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
