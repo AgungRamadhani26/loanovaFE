@@ -1,5 +1,5 @@
 import { Component, signal, computed } from '@angular/core';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 /**
@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 @Component({
     selector: 'app-landing-page',
     standalone: true,
-    imports: [CommonModule, FormsModule, DecimalPipe],
+    imports: [CommonModule, FormsModule],
     templateUrl: './landing-page.component.html',
     styleUrl: './landing-page.component.css'
 })
@@ -49,7 +49,6 @@ export class LandingPageComponent {
      */
     readonly steps = [
         { title: 'Daftar & Login', desc: 'Buat akun dengan nomor telepon Anda.' },
-        { title: 'Pilih Produk', desc: 'Pilih plafon sesuai profil Anda.' },
         { title: 'Upload Data', desc: 'Unggah KTP dan dokumen pendukung.' },
         { title: 'Verifikasi', desc: 'Tim kami akan memverifikasi data Anda.' },
         { title: 'Cair', desc: 'Dana langsung masuk ke rekening Anda.' }
