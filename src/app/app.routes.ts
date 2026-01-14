@@ -5,6 +5,7 @@ import { MainLayoutComponent } from './layout/shared/main-layout.component';
 import { AdminLayoutComponent } from './layout/admin/admin-layout/admin-layout.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { UserListComponent } from './features/users/user-list.component';
+import { BranchListComponent } from './features/branches/branch-list.component';
 
 /**
  * Konfigurasi Routing Aplikasi
@@ -41,7 +42,7 @@ export const routes: Routes = [
              * Nantinya setiap menu ini akan punya komponen masing-masing.
              */
             { path: 'users', component: UserListComponent },
-            { path: 'branches', component: DashboardComponent },
+            { path: 'branches', component: BranchListComponent },
             { path: 'roles', component: DashboardComponent },
             { path: 'loans', component: DashboardComponent },
             { path: 'history', component: DashboardComponent },
