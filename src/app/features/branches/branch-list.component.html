@@ -98,13 +98,13 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-action btn-view" (click)="viewBranch(branch)"
-                                    title="View Details">
-                                    <span class="material-icons-outlined">visibility</span>
-                                </button>
                                 <button class="btn-action btn-edit" (click)="openEditModal(branch)"
                                     title="Edit Branch">
                                     <span class="material-icons-outlined">edit</span>
+                                </button>
+                                <button class="btn-action btn-delete" (click)="openDeleteModal(branch)"
+                                    title="Delete Branch">
+                                    <span class="material-icons-outlined">delete</span>
                                 </button>
                             </div>
                         </td>
@@ -267,6 +267,54 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+}
+
+<!-- DELETE BRANCH MODAL -->
+@if (isDeleteModalOpen()) {
+<div class="modal-overlay align-top">
+    <div class="modal-container delete-modal">
+        <div class="modal-header">
+            <h2>Delete Branch</h2>
+            <button class="btn-close" (click)="closeDeleteModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            @if (formError()) {
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ formError() }}</span>
+            </div>
+            }
+
+            <div class="delete-confirmation-content">
+                <div class="warning-icon">
+                    <span class="material-icons-outlined" style="font-size: 64px;">warning</span>
+                </div>
+                <h3>Are you sure?</h3>
+                <p>
+                    You are about to delete branch <strong>{{ deletingBranch()?.branchName }}</strong> ({{ deletingBranch()?.branchCode }}).
+                    This action cannot be undone.
+                </p>
+                <div class="warning-note">
+                    <small>Note: Branches with active users or loans cannot be deleted.</small>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+                <button type="button" class="btn-danger" (click)="submitDeleteBranch()" [disabled]="isLoading()">
+                    @if (isLoading()) {
+                    <span class="spinner-small"></span> Deleting...
+                    } @else {
+                    Delete Branch
+                    }
+                </button>
+            </div>
         </div>
     </div>
 </div>

@@ -45,4 +45,12 @@ export class BranchService {
     updateBranch(id: number, data: BranchRequest): Observable<ApiResponse<BranchData>> {
         return this.http.put<ApiResponse<BranchData>>(`${this.API_URL}/${id}`, data);
     }
+
+    /**
+     * Menghapus data cabang (Soft Delete)
+     * Endpoint: DELETE /api/branches/{id}
+     */
+    deleteBranch(id: number): Observable<ApiResponse<void>> {
+        return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+    }
 }

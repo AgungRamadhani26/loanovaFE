@@ -472,3 +472,99 @@ Judul modal dan tombol submit menyesuaikan dengan mode.
   {{ isEditMode() ? 'Update Branch' : 'Save Branch' }}
 </button>
 ```
+
+---
+
+## 4. Implementasi Delete Branch (Fase 3)
+
+Fase ini menambahkan kemampuan untuk menghapus cabang (`DELETE /api/branches/{id}`). Implementasi memperhatikan **Business Rules** di backend yaitu: cabang tidak bisa dihapus jika masih memiliki staff atau pengajuan pinjaman aktif (Safe Delete).
+
+### A. Code Separation (Clean Code)
+
+Untuk menjaga keterbacaan kode, logika **Delete** dipisahkan sepenuhnya dari logika Add/Edit. Kita menggunakan state dan handler yang terpisah:
+
+- **State**: `isDeleteModalOpen`, `deletingBranch`
+- **Handlers**: `openDeleteModal`, `submitDeleteBranch`
+- **Modal**: Modal HTML terpisah di bagian bawah file.
+
+### B. Service Update (`branch.service.ts`)
+
+Menambahkan method `deleteBranch`:
+
+```typescript
+deleteBranch(id: number): Observable<ApiResponse<void>> {
+  return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+}
+```
+
+### C. Component Logic (`branch-list.component.ts`)
+
+1.  **Handlers**:
+
+```typescript
+// Buka modal dan simpan data branch yang akan dihapus
+openDeleteModal(branch: BranchData): void {
+    this.deletingBranch.set(branch);
+    this.isDeleteModalOpen.set(true);
+    this.formError.set(null);
+}
+
+// Eksekusi hapus ke backend
+submitDeleteBranch(): void {
+    const branch = this.deletingBranch();
+    if (!branch) return;
+
+    this.branchService.deleteBranch(branch.id).subscribe({
+        next: (response) => {
+            alert(response.message || 'Branch deleted successfully');
+            this.closeDeleteModal();
+            this.loadBranches();
+        },
+        error: (error) => {
+            // Menangani Error 400 (Business Rule Violation)
+            // Contoh: "Cannot delete branch because it has active users"
+            if (error.error && error.error.message) {
+                this.formError.set(error.error.message);
+            } else {
+                this.formError.set('Failed to delete branch.');
+            }
+        }
+    });
+}
+```
+
+### D. UI Template (`branch-list.component.html`)
+
+1.  **Tombol Delete** (di dalam tabel):
+
+```html
+<button class="btn-action btn-delete" (click)="openDeleteModal(branch)">
+  <span class="material-icons-outlined">delete</span>
+</button>
+```
+
+2.  **Delete Confirmation Modal**:
+    Modal ini menampilkan peringatan bahwa tindakan tidak bisa dibatalkan dan informasi tentang Safe Delete constraint.
+
+```html
+<!-- Delete Confirmation Modal -->
+<!-- Menggunakan overlay dengan align-top agar muncul di atas -->
+<div class="modal-overlay align-top">
+  <div class="modal-container delete-modal">
+    <!-- Icon Peringatan Merah -->
+    <div class="warning-icon">
+      <span class="material-icons-outlined" style="font-size: 64px;">warning</span>
+    </div>
+
+    <h3>Are you sure?</h3>
+    <p>You are about to delete branch ...</p>
+
+    <div class="warning-note">
+      <small>Note: Branches with active users or loans cannot be deleted.</small>
+    </div>
+
+    <!-- Buttons -->
+    <button class="btn-danger" (click)="submitDeleteBranch()">Delete Branch</button>
+  </div>
+</div>
+```

@@ -49,6 +49,10 @@ export class BranchListComponent implements OnInit {
     isEditModalOpen = signal(false);
     editingBranchId = signal<number | null>(null);
 
+    // Modal State - DELETE
+    isDeleteModalOpen = signal(false);
+    deletingBranch = signal<BranchData | null>(null);
+
     // Shared UI State
     isSubmitting = signal(false);
     formError = signal<string | null>(null); // Error specific to details/form
@@ -224,6 +228,48 @@ export class BranchListComponent implements OnInit {
         this.fieldErrors.set({});
 
         this.isEditModalOpen.set(true);
+    }
+
+    openDeleteModal(branch: BranchData): void {
+        this.deletingBranch.set(branch);
+        this.isDeleteModalOpen.set(true);
+        this.formError.set(null); // Reset global error state
+    }
+
+    closeDeleteModal(): void {
+        this.isDeleteModalOpen.set(false);
+        this.deletingBranch.set(null);
+        this.formError.set(null);
+    }
+
+    submitDeleteBranch(): void {
+        const branch = this.deletingBranch();
+        if (!branch) return;
+
+        this.isLoading.set(true);
+        this.formError.set(null);
+
+        this.branchService.deleteBranch(branch.id).subscribe({
+            next: (response) => {
+                // We can use a toast or alert, here using alert as requested/pattern
+                // Ideally this would be a toast notification
+                alert(response.message || 'Branch deleted successfully');
+                this.closeDeleteModal();
+                this.loadBranches();
+            },
+            error: (error) => {
+                this.isLoading.set(false);
+                // Handle 400 Bad Request (Business Logic Error: e.g. Has Active Loans)
+                if (error.error && error.error.message) {
+                    this.formError.set(error.error.message);
+                } else {
+                    this.formError.set('Failed to delete branch. It may be in use.');
+                }
+            },
+            complete: () => {
+                this.isLoading.set(false);
+            }
+        });
     }
 
 
