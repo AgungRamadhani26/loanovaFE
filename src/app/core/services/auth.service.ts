@@ -1,6 +1,7 @@
 import { Injectable, signal, computed, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 
 // Mengimpor Model Modular (Struktur folder request/response baru)
@@ -26,6 +27,8 @@ export class AuthService {
     private http = inject(HttpClient);
     // platformId: Buat ngecek kita lagi di browser atau di server (Penting buat Angular SSR)
     private platformId = inject(PLATFORM_ID);
+    // Router: Buat navigasi antar halaman
+    private router = inject(Router);
 
     // Alamat API (Ditangkap oleh proxy.conf.json lalu dioper ke http://localhost:9091)
     private readonly API_URL = '/api/auth';
@@ -39,7 +42,8 @@ export class AuthService {
         token: null,           // Token akses (kosong)
         refreshToken: null,    // Token penyegar (kosong)
         username: null,        // Nama user (kosong)
-        roles: []              // Hak akses (kosong)
+        roles: [],             // Hak akses (kosong)
+        permissions: []        // Permission (kosong)
     });
 
     /**
@@ -59,7 +63,11 @@ export class AuthService {
             // Kita gunakan StorageUtil yang sudah di-enkripsi AES
             const authData = StorageUtil.getItem<any>('loanova_auth');
             if (authData) {
-                this.userState.set({ ...authData, isAuthenticated: true });
+                this.userState.set({
+                    permissions: [],
+                    ...authData,
+                    isAuthenticated: true
+                });
             }
         }
     }
@@ -86,7 +94,8 @@ export class AuthService {
                         token: response.data.accessToken,
                         refreshToken: response.data.refreshToken,
                         username: response.data.username,
-                        roles: response.data.roles
+                        roles: response.data.roles,
+                        permissions: response.data.permissions || []
                     });
                 }
             })
@@ -118,7 +127,7 @@ export class AuthService {
 
     /**
      * LOGOUT
-     * Memanggil API logout backend untuk invalidasi token di server, 
+     * Memanggil API logout backend untuk invalidasi token di server,
      * kemudian membersihkan state lokal (signal & localStorage).
      */
     logout(): Observable<ApiResponse<null>> {
@@ -147,12 +156,16 @@ export class AuthService {
             token: null,
             refreshToken: null,
             username: null,
-            roles: []
+            roles: [],
+            permissions: []
         });
         // 2. Buang token dari LocalStorage biar pas di refresh gak login otomatis lagi
         if (isPlatformBrowser(this.platformId)) {
             StorageUtil.removeItem('loanova_auth');
         }
+
+        // 3. Arahkan kembali ke halaman login
+        this.router.navigate(['/auth/login']);
     }
 
     /**

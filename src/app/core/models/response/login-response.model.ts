@@ -9,4 +9,5 @@ export interface LoginData {
     type: string;
     username: string;
     roles: UserRole[];
+    permissions: string[];
 }

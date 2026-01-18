@@ -9,4 +9,5 @@ export interface UserState {
     refreshToken: string | null;
     username: string | null;
     roles: UserRole[];
+    permissions: string[];
 }

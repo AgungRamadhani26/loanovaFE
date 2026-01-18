@@ -1,8 +1,12 @@
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn, HttpErrorResponse } from '@angular/common/http';
 import { inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { catchError, switchMap, throwError } from 'rxjs';
+import { BehaviorSubject, catchError, filter, switchMap, take, throwError, tap } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+
+// Variable global untuk menangani concurrent refresh token
+let isRefreshing = false;
+const refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
 /**
  * AUTH INTERCEPTOR
@@ -67,38 +71,55 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
 /**
  * HANDLE REFRESH TOKEN SECARA DIAM-DIAM (SILENT REFRESH)
  * Gunanya: Biar user gak ngerasa tokennya abis, dia gak bakal disuruh logout.
+ * Dilengkapi dengan mekanisme 'Locking' (Mutex) agar tidak bentrok kalau ada banyak request sekaligus.
  */
 function handle401Error(req: HttpRequest<unknown>, next: HttpHandlerFn, authService: AuthService) {
-    // 1. Minta AuthService buat tukerin RefreshToken jadi AccessToken baru
-    return authService.refreshToken().pipe(
-        /**
-         * SWITCHMAP:
-         * Gunanya buat nunda request yang tadinya gagal (tunggu dapet token baru dulu).
-         */
-        switchMap((response) => {
-            if (response.success) {
-                // YEAY! Dapet token baru. Sekarang kita ambil kuncinya.
-                const newToken = authService.getAccessToken();
+    // Jika belum ada yang lagi refresh, kita yang ambil alih
+    if (!isRefreshing) {
+        isRefreshing = true;
+        refreshTokenSubject.next(null); // Reset sinyal
 
-                // 2. Kloning ulang request lama yang GAGAL tadi, pasangin TOKEN BARU.
+        return authService.refreshToken().pipe(
+            switchMap((response) => {
+                isRefreshing = false;
+                if (response.success && response.data?.accessToken) {
+                    // YEAY! Dapet token baru.
+                    // Kabari semua request yang lagi ngantri
+                    refreshTokenSubject.next(response.data.accessToken);
+
+                    // Ulangi request kita sendiri
+                    const retryReq = req.clone({
+                        setHeaders: {
+                            Authorization: `Bearer ${response.data.accessToken}`
+                        }
+                    });
+                    return next(retryReq);
+                } else {
+                    // Gagal refresh
+                    authService.clearAuthState();
+                    return throwError(() => new Error('Refresh token invalid'));
+                }
+            }),
+            catchError((err) => {
+                isRefreshing = false;
+                authService.clearAuthState();
+                return throwError(() => err);
+            })
+        );
+    } else {
+        // Jika sedang refresh, kita NGANTRI sampai dapet sinyal token baru
+        return refreshTokenSubject.pipe(
+            filter(token => token !== null), // Tunggu sampe token TIDAK null
+            take(1), // Ambil satu kali aja
+            switchMap(token => {
+                // Token baru udah dateng, pake buat request ulang
                 const retryReq = req.clone({
                     setHeaders: {
-                        Authorization: `Bearer ${newToken}`
+                        Authorization: `Bearer ${token}`
                     }
                 });
-
-                // 3. Kirim ulang paketnya! User gak bakal tau kalo tadi sempet gagal.
                 return next(retryReq);
-            } else {
-                // Kalo usaha refresh gagal juga (misal: RefreshToken juga abis masanya)
-                authService.clearAuthState(); // Paksa keluar
-                return throwError(() => new Error('Sesi sudah habis, silakan login ulang.'));
-            }
-        }),
-        catchError((err) => {
-            // Kalo koneksi putus pas lagi refresh
-            authService.clearAuthState();
-            return throwError(() => err);
-        })
-    );
+            })
+        );
+    }
 }

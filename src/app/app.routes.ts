@@ -6,6 +6,7 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout/admin-layout.c
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { UserListComponent } from './features/users/user-list.component';
 import { BranchListComponent } from './features/branches/branch-list.component';
+import { authGuard } from './core/guards/auth.guard';
 
 /**
  * Konfigurasi Routing Aplikasi
@@ -33,6 +34,7 @@ export const routes: Routes = [
     {
         path: 'admin',
         component: AdminLayoutComponent,
+        canActivate: [authGuard],
         children: [
             { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
             { path: 'dashboard', component: DashboardComponent },
