@@ -1,4 +1,11 @@
 <div class="branch-management-container">
+    @if (successMessage()) {
+        <div class="success-toast">
+            <span class="material-icons-outlined">check_circle</span>
+            <span>{{ successMessage() }}</span>
+        </div>
+    }
+
     <!-- HEADER SECTION -->
     <div class="header-section">
         <div class="title-wrapper">
@@ -30,6 +37,10 @@
                     [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
             </div>
             <div class="filter-actions">
+                <button class="btn-primary" (click)="openAddModal()">
+                    <span class="material-icons-outlined">add</span>
+                    New Branch
+                </button>
                 <button class="btn-icon" (click)="loadBranches()">
                     <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
                 </button>
@@ -91,7 +102,7 @@
                                     title="View Details">
                                     <span class="material-icons-outlined">visibility</span>
                                 </button>
-                                <button class="btn-action btn-edit" (click)="editBranch(branch)"
+                                <button class="btn-action btn-edit" (click)="openEditModal(branch)"
                                     title="Edit Branch">
                                     <span class="material-icons-outlined">edit</span>
                                 </button>
@@ -134,3 +145,129 @@
         }
     </div>
 </div>
+
+<!-- ADD BRANCH MODAL -->
+@if (isAddModalOpen()) {
+<div class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Add New Branch</h3>
+            <button class="btn-close" (click)="closeAddModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            @if (formError()) {
+                <div class="error-alert">
+                    <span class="material-icons-outlined">error</span>
+                    <span>{{ formError() }}</span>
+                </div>
+            }
+
+            <form (ngSubmit)="submitAddBranch()">
+                <div class="form-group">
+                    <label>Branch Code <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="addBranchForm.branchCode" name="branchCode"
+                           placeholder="Ex: JKT01" [class.error]="getFieldError('branchCode')">
+                    @if (getFieldError('branchCode')) {
+                        <span class="error-text">{{ getFieldError('branchCode') }}</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>Branch Name <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="addBranchForm.branchName" name="branchName"
+                           placeholder="Ex: Jakarta Pusat" [class.error]="getFieldError('branchName')">
+                    @if (getFieldError('branchName')) {
+                        <span class="error-text">{{ getFieldError('branchName') }}</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>Address <span class="required">*</span></label>
+                    <textarea [(ngModel)]="addBranchForm.address" name="address" rows="3"
+                              placeholder="Full address..." [class.error]="getFieldError('address')"></textarea>
+                    @if (getFieldError('address')) {
+                        <span class="error-text">{{ getFieldError('address') }}</span>
+                    }
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" (click)="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                            <span class="spinner-small"></span> Saving...
+                        } @else {
+                            Save Branch
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+}
+
+<!-- EDIT BRANCH MODAL -->
+@if (isEditModalOpen()) {
+<div class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Edit Branch</h3>
+            <button class="btn-close" (click)="closeEditModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            @if (formError()) {
+                <div class="error-alert">
+                    <span class="material-icons-outlined">error</span>
+                    <span>{{ formError() }}</span>
+                </div>
+            }
+
+            <form (ngSubmit)="submitEditBranch()">
+                <div class="form-group">
+                    <label>Branch Code <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="editBranchForm.branchCode" name="branchCode"
+                           placeholder="Ex: JKT01" [class.error]="getFieldError('branchCode')">
+                    @if (getFieldError('branchCode')) {
+                        <span class="error-text">{{ getFieldError('branchCode') }}</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>Branch Name <span class="required">*</span></label>
+                    <input type="text" [(ngModel)]="editBranchForm.branchName" name="branchName"
+                           placeholder="Ex: Jakarta Pusat" [class.error]="getFieldError('branchName')">
+                    @if (getFieldError('branchName')) {
+                        <span class="error-text">{{ getFieldError('branchName') }}</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>Address <span class="required">*</span></label>
+                    <textarea [(ngModel)]="editBranchForm.address" name="address" rows="3"
+                              placeholder="Full address..." [class.error]="getFieldError('address')"></textarea>
+                    @if (getFieldError('address')) {
+                        <span class="error-text">{{ getFieldError('address') }}</span>
+                    }
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                            <span class="spinner-small"></span> Updating...
+                        } @else {
+                            Update Branch
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+}

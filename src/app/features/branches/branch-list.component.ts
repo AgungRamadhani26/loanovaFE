@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BranchService } from '../../core/services/branch.service';
 import { BranchData } from '../../core/models/response/branch-response.model';
+import { BranchRequest } from '../../core/models/request/branch-request.model';
 
 /**
  * BRANCH LIST COMPONENT
@@ -13,6 +14,7 @@ import { BranchData } from '../../core/models/response/branch-response.model';
  * - Search/filter cabang berdasarkan kode, nama, atau alamat
  * - Pagination untuk navigasi data
  * - Loading state saat mengambil data
+ * - Tambah Cabang Baru (Modal)
  *
  * State Management: Menggunakan Angular Signals (Reactive Programming)
  */
@@ -38,6 +40,34 @@ export class BranchListComponent implements OnInit {
     branches = signal<BranchData[]>([]);
     isLoading = signal<boolean>(false);
     searchQuery = signal<string>('');
+    error = signal<string | null>(null); // Global error message
+
+    // Modal State - ADD
+    isAddModalOpen = signal(false);
+
+    // Modal State - EDIT
+    isEditModalOpen = signal(false);
+    editingBranchId = signal<number | null>(null);
+
+    // Shared UI State
+    isSubmitting = signal(false);
+    formError = signal<string | null>(null); // Error specific to details/form
+    fieldErrors = signal<{ [key: string]: string }>({}); // Validation errors per field
+    successMessage = signal<string | null>(null);
+
+    // Form Data - ADD
+    addBranchForm: BranchRequest = {
+        branchCode: '',
+        branchName: '',
+        address: ''
+    };
+
+    // Form Data - EDIT
+    editBranchForm: BranchRequest = {
+        branchCode: '',
+        branchName: '',
+        address: ''
+    };
 
     /**
      * PAGINATION STATE
@@ -181,8 +211,103 @@ export class BranchListComponent implements OnInit {
         // TODO: Implement view details
     }
 
-    editBranch(branch: BranchData): void {
-        console.log('Edit branch:', branch);
-        // TODO: Implement edit functionality
+    openEditModal(branch: BranchData): void {
+        this.editBranchForm = {
+            branchCode: branch.branchCode,
+            branchName: branch.branchName,
+            address: branch.address
+        };
+        this.editingBranchId.set(branch.id);
+
+        // Reset Error State
+        this.formError.set(null);
+        this.fieldErrors.set({});
+
+        this.isEditModalOpen.set(true);
+    }
+
+
+    /**
+     * MODAL & FORM HANDLERS
+     */
+    openAddModal(): void {
+        this.addBranchForm = { branchCode: '', branchName: '', address: '' };
+
+        // Reset Error State
+        this.formError.set(null);
+        this.fieldErrors.set({});
+
+        this.isAddModalOpen.set(true);
+    }
+
+    closeAddModal(): void {
+        this.isAddModalOpen.set(false);
+    }
+
+    closeEditModal(): void {
+        this.isEditModalOpen.set(false);
+    }
+
+    submitAddBranch(): void {
+        this.isSubmitting.set(true);
+        this.formError.set(null);
+        this.fieldErrors.set({});
+
+        this.branchService.createBranch(this.addBranchForm).subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.loadBranches();
+                    this.closeAddModal();
+
+                    this.successMessage.set(response.message || 'Branch created successfully!');
+                    setTimeout(() => this.successMessage.set(null), 3000);
+                }
+                this.isSubmitting.set(false);
+            },
+            error: (err) => this.handleError(err)
+        });
+    }
+
+    submitEditBranch(): void {
+        const id = this.editingBranchId();
+        if (!id) return;
+
+        this.isSubmitting.set(true);
+        this.formError.set(null);
+        this.fieldErrors.set({});
+
+        this.branchService.updateBranch(id, this.editBranchForm).subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.loadBranches();
+                    this.closeEditModal();
+
+                    this.successMessage.set(response.message || 'Branch updated successfully!');
+                    setTimeout(() => this.successMessage.set(null), 3000);
+                }
+                this.isSubmitting.set(false);
+            },
+            error: (err) => this.handleError(err)
+        });
+    }
+
+    private handleError(err: any): void {
+        console.error('Error saving branch:', err);
+        const apiError = err.error;
+
+        if (apiError) {
+            this.formError.set(apiError.message);
+
+            if (apiError.data && apiError.data.errors) {
+                 this.fieldErrors.set(apiError.data.errors);
+            }
+        } else {
+             this.formError.set('Terjadi kesalahan koneksi.');
+        }
+        this.isSubmitting.set(false);
+    }
+
+    getFieldError(field: string): string | undefined {
+        return this.fieldErrors()[field];
     }
 }
