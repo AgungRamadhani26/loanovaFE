@@ -64,77 +64,100 @@ export class PlafondService {
 }
 ```
 
-### C. Membuat Komponen Tampilan (Plafond List)
+### C. Membuat Komponen Tampilan (Plafond List - Corporate Card View)
 
 File: `src/app/features/plafonds/plafond-list.component.ts`
-Komponen ini menggunakan strategi **Client-Side Filter & Pagination** dengan dukungan **Server-Side Rendering (SSR)** dan **Modal Form** untuk aksi Create.
+Komponen ini menggunakan strategi **Grid View** dengan tampilan kartu yang profesional ("Corporate Look").
 
 **Fitur Utama:**
 
 1.  **SSR Handling**: Menggunakan `isPlatformBrowser` untuk memastikan API call hanya berjalan di browser.
-2.  **Advanced Search logic**: Menggunakan Regex untuk mixed search (Text & Number).
-3.  **Create Action**: Modal form dengan validasi error dari backend status 400 & 409.
+2.  **Corporate Card Design**: Menampilkan data dalam bentuk kartu dengan *visual hierarchy* yang jelas (Header, Metrics, Footer).
+3.  **Dynamic Styling**: Menggunakan helper helper methods untuk menentukan warna aksen dan ikon berdasarkan nama paket (Platinum, Gold, dll).
 
 ```typescript
-// Implementasi Create Action dengan Validasi
-submitPlafond(): void {
-    this.plafondService.createPlafond(this.newPlafond()).subscribe({
-        error: (err) => {
-            if (err.status === 400) {
-                // Mapping field errors dari Backend
-                this.validationErrors.set(err.error.data.errors);
-            } else if (err.status === 409) {
-                // Handling duplicate name
-                this.validationErrors.set({ name: err.error.message });
-            }
-        }
-    });
+// Helper Methods untuk Styling Dinamis
+getAccentClass(name: string): string {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('platinum')) return 'accent-platinum';
+    if (lowerName.includes('gold')) return 'accent-gold';
+    if (lowerName.includes('silver')) return 'accent-silver';
+    if (lowerName.includes('bronze')) return 'accent-bronze';
+    return 'accent-default';
+}
+
+getIconClass(name: string): string {
+    // Logic similar to accent class for icon selection
+    // ...
 }
 ```
 
 File: `src/app/features/plafonds/plafond-list.component.html`
-Template menggunakan:
-
-- `[ngClass]` untuk styling dinamis baris tabel.
-- Modal dengan backdrop blur untuk form input.
-- `[(ngModel)]` binding untuk input form.
+Template menggunakan Grid CSS untuk layout responsif tanpa kontrol paginasi visual (clean view).
 
 ```html
-<!-- Contoh Modal Input dengan Error Message -->
-<div class="form-group">
-  <label>Plafond Name</label>
-  <input [(ngModel)]="newPlafond().name" [class.border-red-500]="validationErrors()['name']" />
-  @if (validationErrors()['name']) {
-  <p class="text-red-500">{{ validationErrors()['name'] }}</p>
-  }
+<!-- Grid Container -->
+<div class="plafond-grid-container">
+    <div class="plafond-grid">
+        @for (plafond of filteredPlafonds(); track plafond.id) {
+        <div class="plafond-card-corporate">
+             <!-- Accent Line -->
+            <div class="card-accent" [ngClass]="getAccentClass(plafond.name)"></div>
+            
+            <div class="card-main">
+                <!-- Header with Icon & Title -->
+                <div class="card-header-corp">
+                    <div class="header-icon-wrapper" [ngClass]="getIconClass(plafond.name)">
+                        <span class="material-icons-outlined">workspace_premium</span>
+                    </div>
+                    <div class="header-text">
+                        <h3 class="corp-title">{{ plafond.name }}</h3>
+                        <span class="corp-subtitle">{{ plafond.description }}</span>
+                    </div>
+                </div>
+
+                <!-- Metrics Box (Limit & Interest) -->
+                <div class="metrics-container">
+                    <div class="metric-box">
+                        <label>Maximum Limit</label>
+                        <div class="value">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</div>
+                    </div>
+                     <div class="metric-divider"></div>
+                     <div class="metric-box">
+                        <label>Interest Rate</label>
+                        <div class="value text-highlight">{{ plafond.interestRate }}%</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
 </div>
 ```
 
 File: `src/app/features/plafonds/plafond-list.component.css`
-Menambahkan styling khusus untuk membedakan jenis paket pinjaman secara visual.
+Menambahkan styling khusus untuk kartu "Corporate" dengan shadow halus dan transisi.
 
 ```css
-/* Styling Baris Tabel Berdasarkan Paket */
-.row-gold {
-  background-color: #fffbeb !important; /* Amber-50 */
-}
-.row-gold:hover {
-  background-color: #fef3c7 !important; /* Amber-100 */
-}
-
-.row-silver {
-  background-color: #f8fafc !important; /* Slate-50 */
-}
-.row-silver:hover {
-  background-color: #f1f5f9 !important; /* Slate-100 */
+/* Corporate Card Styles */
+.plafond-card-corporate {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    /* ... transition ... */
 }
 
-.row-bronze {
-  background-color: #fff7ed !important; /* Orange-50 */
+.plafond-card-corporate:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.1);
 }
-.row-bronze:hover {
-  background-color: #ffedd5 !important; /* Orange-100 */
-}
+
+/* Color Themes (Accent & Icons) */
+.accent-gold { background: linear-gradient(90deg, #fef3c7, #fbbf24); }
+.icon-gold { background: #fffbeb; color: #d97706; }
+
+/* ... Silver, Bronze, Platinum themes ... */
 ```
 
 ### D. Konfigurasi Routing
