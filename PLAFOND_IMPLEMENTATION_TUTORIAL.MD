@@ -76,6 +76,13 @@ Komponen ini menggunakan strategi **Grid View** dengan tampilan kartu yang profe
 3.  **Dynamic Styling**: Menggunakan helper helper methods untuk menentukan warna aksen dan ikon berdasarkan nama paket (Platinum, Gold, dll).
 
 ```typescript
+// Logic Penanganan Create
+submitPlafond(): void {
+  // ...
+  this.plafondService.createPlafond(request);
+  // ...
+}
+
 // Helper Methods untuk Styling Dinamis
 getAccentClass(name: string): string {
     const lowerName = name.toLowerCase();
@@ -95,7 +102,21 @@ getIconClass(name: string): string {
 File: `src/app/features/plafonds/plafond-list.component.html`
 Template menggunakan Grid CSS untuk layout responsif tanpa kontrol paginasi visual (clean view).
 
+- **Edit Button**: Ditambahkan pada Header Card.
+- **Reusable Modal**: Title dan Button text berubah dinamis ("Add" vs "Edit"/"Update").
+
 ```html
+<!-- Tombol Edit pada Card -->
+<div class="card-header-corp">
+  ...
+  <button class="btn-icon-small edit" (click)="openEditModal(plafond)">
+    <span class="material-icons-outlined">edit</span>
+  </button>
+</div>
+
+<!-- Dynamic Modal Header -->
+<h3>{{ editingPlafondId() ? 'Edit Plafond' : 'Add New Plafond' }}</h3>
+
 <!-- Grid Container -->
 <div class="plafond-grid-container">
     <div class="plafond-grid">

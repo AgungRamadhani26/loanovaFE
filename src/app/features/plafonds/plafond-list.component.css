@@ -590,6 +590,24 @@
     }
 }
 
+/* ERROR TOAST */
+.error-toast {
+    position: fixed;
+    top: 80px; /* Below success toast */
+    right: 24px;
+    background: #ef4444;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 .row-platinum {
     background-color: #e0f2fe !important;
     /* Sky-100 */
