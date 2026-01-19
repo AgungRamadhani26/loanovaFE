@@ -54,36 +54,36 @@ export class PlafondListComponent implements OnInit {
     const cleanQuery = query.replace(/[^0-9.,-]/g, '');
 
     return this.plafonds().filter(p => {
-        // 1. Text Search (Name & Desc)
-        if (p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)) {
-            return true;
+      // 1. Text Search (Name & Desc)
+      if (p.name.toLowerCase().includes(query) || p.description.toLowerCase().includes(query)) {
+        return true;
+      }
+
+      // 2. Numeric Search (Max Amount, Interest, Tenor)
+      // Cek jika query mengandung angka
+      if (cleanQuery) {
+        const maxAmountStr = p.maxAmount.toString();
+        const interestStr = p.interestRate.toString();
+        const tenorMinStr = p.tenorMin.toString();
+        const tenorMaxStr = p.tenorMax.toString();
+
+        // Cek match langsung angka
+        if (maxAmountStr.includes(cleanQuery) ||
+          interestStr.includes(cleanQuery) ||
+          tenorMinStr.includes(cleanQuery) ||
+          tenorMaxStr.includes(cleanQuery)) {
+          return true;
         }
 
-        // 2. Numeric Search (Max Amount, Interest, Tenor)
-        // Cek jika query mengandung angka
-        if (cleanQuery) {
-             const maxAmountStr = p.maxAmount.toString();
-             const interestStr = p.interestRate.toString();
-             const tenorMinStr = p.tenorMin.toString();
-             const tenorMaxStr = p.tenorMax.toString();
-
-             // Cek match langsung angka
-             if (maxAmountStr.includes(cleanQuery) ||
-                 interestStr.includes(cleanQuery) ||
-                 tenorMinStr.includes(cleanQuery) ||
-                 tenorMaxStr.includes(cleanQuery)) {
-                 return true;
-             }
-
-             // Cek Range Tenor (misal user ketik "12-60")
-             // Format tampilan: "12 - 60"
-             const tenorRangeStr = `${p.tenorMin}-${p.tenorMax}`;
-             if (tenorRangeStr.includes(cleanQuery.replace(/\s/g, ''))) {
-                 return true;
-             }
+        // Cek Range Tenor (misal user ketik "12-60")
+        // Format tampilan: "12 - 60"
+        const tenorRangeStr = `${p.tenorMin}-${p.tenorMax}`;
+        if (tenorRangeStr.includes(cleanQuery.replace(/\s/g, ''))) {
+          return true;
         }
+      }
 
-        return false;
+      return false;
     });
   });
 
@@ -123,9 +123,27 @@ export class PlafondListComponent implements OnInit {
     return '';
   }
 
+  getAccentClass(name: string): string {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('platinum')) return 'accent-platinum';
+    if (lowerName.includes('gold')) return 'accent-gold';
+    if (lowerName.includes('silver')) return 'accent-silver';
+    if (lowerName.includes('bronze')) return 'accent-bronze';
+    return 'accent-default';
+  }
+
+  getIconClass(name: string): string {
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes('platinum')) return 'icon-platinum';
+    if (lowerName.includes('gold')) return 'icon-gold';
+    if (lowerName.includes('silver')) return 'icon-silver';
+    if (lowerName.includes('bronze')) return 'icon-bronze';
+    return 'icon-default';
+  }
+
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
-        this.loadPlafonds();
+      this.loadPlafonds();
     }
   }
 
@@ -135,6 +153,7 @@ export class PlafondListComponent implements OnInit {
       next: (response) => {
         if (response.success) {
           this.plafonds.set(response.data);
+          // Set error message if empty? No, filtered view handles it.
         } else {
           this.errorMessage.set(response.message);
         }
@@ -175,7 +194,7 @@ export class PlafondListComponent implements OnInit {
 
           // Show Success Toast
           this.successMessage.set(response.message || 'Plafond berhasil ditambahkan!');
-          setTimeout(() => this.successMessage.set(null), 3000);
+          setTimeout(() => this.successMessage.set(''), 3000);
         }
         this.isSubmitting.set(false);
       },

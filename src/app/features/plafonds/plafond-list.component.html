@@ -12,6 +12,12 @@
             <h1 class="page-title">Plafond Management</h1>
             <p class="page-subtitle">View and manage loan plafond limits and interest rates.</p>
         </div>
+        <div class="filter-actions">
+            <button class="btn-primary" (click)="openModal()">
+                <span class="material-icons-outlined">add</span>
+                <span>Add Plafond</span>
+            </button>
+        </div>
     </div>
 
     <!-- STATS SUMMARY -->
@@ -28,113 +34,67 @@
     </div>
 
     <!-- TABLE CARD -->
-    <div class="table-card shadow-sm border border-slate-200">
-        <!-- Search & Filter Bar -->
-        <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
-            <div class="search-box">
-                <span class="material-icons-outlined">search</span>
-                <input type="text" placeholder="Search by name or description..."
-                    [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
-            </div>
-            <div class="filter-actions">
-                <button class="btn-primary" (click)="openModal()">
-                    <span class="material-icons-outlined">add</span>
-                    <span>Add Plafond</span>
-                </button>
-                <button class="btn-icon" (click)="loadPlafonds()">
-                    <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
-                </button>
-            </div>
-        </div>
+    <!-- Removed to make layout cleaner -->
 
-        <!-- TABLE CONTENT -->
+    <!-- CONTENT -->
+    <div class="content-wrapper">
         @if (isLoading()) {
-        <!-- LOADING STATE -->
         <div class="loading-container">
             <div class="loading-spinner"></div>
         </div>
         } @else if (filteredPlafonds().length === 0) {
-        <!-- EMPTY STATE -->
         <div class="empty-state">
             <div class="empty-icon">
                 <span class="material-icons-outlined">monetization_on</span>
             </div>
             <h3 class="empty-title">No Plafonds Found</h3>
-            <p class="empty-message">
-                @if (searchQuery()) {
-                Try adjusting your search criteria
-                } @else {
-                No plafond data available at the moment
-                }
-            </p>
+            <p class="empty-message">No plafond data available at the moment</p>
         </div>
         } @else {
-        <!-- DATA TABLE -->
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th style="width: 60px;">NO</th>
-                        <th>NAME</th>
-                        <th>DESCRIPTION</th>
-                        <th>MAX AMOUNT</th>
-                        <th>INTEREST RATE</th>
-                        <th>TENOR RANGE</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (plafond of paginatedPlafonds(); track plafond.id; let i = $index) {
-                    <tr [ngClass]="getRowClass(plafond.name)">
-                        <td style="text-align: center; font-weight: 600; color: #64748b;">
-                            {{ getRowNumber(i) }}
-                        </td>
-                        <td>
-                            <span class="branch-name">{{ plafond.name }}</span>
-                        </td>
-                        <td>
-                            <span class="branch-address">{{ plafond.description }}</span>
-                        </td>
-                        <td>
-                            <span class="branch-code">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</span>
-                        </td>
-                         <td>
-                            <span class="branch-name text-blue-600">{{ plafond.interestRate }}%</span>
-                        </td>
-                         <td>
-                            <span class="text-slate-600 font-medium">{{ plafond.tenorMin }} - {{ plafond.tenorMax }} Months</span>
-                        </td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+        <!-- DATA GRID -->
+        <div class="plafond-grid-container">
+            <div class="plafond-grid">
+                @for (plafond of filteredPlafonds(); track plafond.id) {
+                <div class="plafond-card-corporate">
+                    <!-- Top Accent Line (Color coded by type) -->
+                    <div class="card-accent" [ngClass]="getAccentClass(plafond.name)"></div>
 
-        <!-- PAGINATION -->
-        <div class="pagination-wrapper">
-            <div class="pagination-info">
-                <span>Showing {{ showingFrom() }} to {{ showingTo() }} of {{ filteredPlafonds().length }} entries</span>
-                <select class="page-size-selector" [value]="pageSize()" (change)="onPageSizeChange($event)">
-                    <option value="5">5 per page</option>
-                    <option value="10">10 per page</option>
-                    <option value="25">25 per page</option>
-                    <option value="50">50 per page</option>
-                </select>
-            </div>
+                    <div class="card-main">
+                        <!-- Header -->
+                        <div class="card-header-corp">
+                            <div class="header-icon-wrapper" [ngClass]="getIconClass(plafond.name)">
+                                <span class="material-icons-outlined">workspace_premium</span>
+                            </div>
+                            <div class="header-text">
+                                <h3 class="corp-title">{{ plafond.name }}</h3>
+                                <span class="corp-subtitle">{{ plafond.description }}</span>
+                            </div>
+                        </div>
 
-            <div class="pagination-controls">
-                <button class="page-btn" [disabled]="currentPage() === 1" (click)="previousPage()">
-                    <span class="material-icons-outlined">chevron_left</span>
-                </button>
+                        <!-- Key Metrics Row -->
+                        <div class="metrics-container">
+                            <div class="metric-box primary-metric">
+                                <label>Maximum Limit</label>
+                                <div class="value">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</div>
+                            </div>
+                            <div class="metric-divider"></div>
+                            <div class="metric-box secondary-metric">
+                                <label>Interest Rate</label>
+                                <div class="value text-highlight">{{ plafond.interestRate }}%</div>
+                            </div>
+                        </div>
 
-                @for (page of pages(); track page) {
-                <button class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">
-                    {{ page }}
-                </button>
+                        <!-- Footer / Details -->
+                        <div class="card-footer-corp">
+                            <div class="detail-item">
+                                <span class="material-icons-outlined">date_range</span>
+                                <span>Tenor: <strong>{{ plafond.tenorMin }} - {{ plafond.tenorMax }}
+                                        Months</strong></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 }
-
-                <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
-                    <span class="material-icons-outlined">chevron_right</span>
-                </button>
             </div>
         </div>
         }
@@ -158,11 +118,10 @@
                 <!-- Name -->
                 <div class="form-group">
                     <label>Plafond Name <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="newPlafond().name"
-                           [class.error]="validationErrors()['name']"
-                           placeholder="e.g. Gold, Platinum">
+                    <input type="text" [(ngModel)]="newPlafond().name" [class.error]="validationErrors()['name']"
+                        placeholder="e.g. Gold, Platinum">
                     @if (validationErrors()['name']) {
-                        <span class="error-text">{{ validationErrors()['name'] }}</span>
+                    <span class="error-text">{{ validationErrors()['name'] }}</span>
                     }
                 </div>
 
@@ -170,10 +129,10 @@
                 <div class="form-group">
                     <label>Description <span class="required">*</span></label>
                     <textarea [(ngModel)]="newPlafond().description" rows="3"
-                           [class.error]="validationErrors()['description']"
-                           placeholder="Brief description of the plafond tier"></textarea>
+                        [class.error]="validationErrors()['description']"
+                        placeholder="Brief description of the plafond tier"></textarea>
                     @if (validationErrors()['description']) {
-                        <span class="error-text">{{ validationErrors()['description'] }}</span>
+                    <span class="error-text">{{ validationErrors()['description'] }}</span>
                     }
                 </div>
 
@@ -182,9 +141,9 @@
                     <div class="form-group">
                         <label>Max Amount (IDR) <span class="required">*</span></label>
                         <input type="number" [(ngModel)]="newPlafond().maxAmount"
-                               [class.error]="validationErrors()['maxAmount']">
+                            [class.error]="validationErrors()['maxAmount']">
                         @if (validationErrors()['maxAmount']) {
-                            <span class="error-text">{{ validationErrors()['maxAmount'] }}</span>
+                        <span class="error-text">{{ validationErrors()['maxAmount'] }}</span>
                         }
                     </div>
 
@@ -192,9 +151,9 @@
                     <div class="form-group">
                         <label>Interest Rate (%) <span class="required">*</span></label>
                         <input type="number" step="0.1" [(ngModel)]="newPlafond().interestRate"
-                               [class.error]="validationErrors()['interestRate']">
+                            [class.error]="validationErrors()['interestRate']">
                         @if (validationErrors()['interestRate']) {
-                            <span class="error-text">{{ validationErrors()['interestRate'] }}</span>
+                        <span class="error-text">{{ validationErrors()['interestRate'] }}</span>
                         }
                     </div>
                 </div>
@@ -204,9 +163,9 @@
                     <div class="form-group">
                         <label>Min Tenor (Months) <span class="required">*</span></label>
                         <input type="number" [(ngModel)]="newPlafond().tenorMin"
-                               [class.error]="validationErrors()['tenorMin']">
-                         @if (validationErrors()['tenorMin']) {
-                            <span class="error-text">{{ validationErrors()['tenorMin'] }}</span>
+                            [class.error]="validationErrors()['tenorMin']">
+                        @if (validationErrors()['tenorMin']) {
+                        <span class="error-text">{{ validationErrors()['tenorMin'] }}</span>
                         }
                     </div>
 
@@ -214,9 +173,9 @@
                     <div class="form-group">
                         <label>Max Tenor (Months) <span class="required">*</span></label>
                         <input type="number" [(ngModel)]="newPlafond().tenorMax"
-                               [class.error]="validationErrors()['tenorMax']">
-                         @if (validationErrors()['tenorMax']) {
-                            <span class="error-text">{{ validationErrors()['tenorMax'] }}</span>
+                            [class.error]="validationErrors()['tenorMax']">
+                        @if (validationErrors()['tenorMax']) {
+                        <span class="error-text">{{ validationErrors()['tenorMax'] }}</span>
                         }
                     </div>
                 </div>
@@ -228,9 +187,9 @@
                     </button>
                     <button class="btn-primary" (click)="submitPlafond()" [disabled]="isSubmitting()">
                         @if (isSubmitting()) {
-                            <span class="spinner-small"></span> Saving...
+                        <span class="spinner-small"></span> Saving...
                         } @else {
-                            Save Plafond
+                        Save Plafond
                         }
                     </button>
                 </div>
