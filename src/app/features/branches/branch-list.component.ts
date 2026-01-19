@@ -251,9 +251,9 @@ export class BranchListComponent implements OnInit {
 
         this.branchService.deleteBranch(branch.id).subscribe({
             next: (response) => {
-                // We can use a toast or alert, here using alert as requested/pattern
-                // Ideally this would be a toast notification
-                alert(response.message || 'Branch deleted successfully');
+                this.successMessage.set(response.message || 'Branch deleted successfully');
+                setTimeout(() => this.successMessage.set(null), 3000);
+
                 this.closeDeleteModal();
                 this.loadBranches();
             },
