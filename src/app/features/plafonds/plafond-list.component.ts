@@ -206,6 +206,31 @@ export class PlafondListComponent implements OnInit {
     });
   }
 
+  deletePlafond(id: number, name: string): void {
+    if (confirm(`Are you sure you want to delete plafond "${name}"? This action cannot be undone.`)) {
+      this.isLoading.set(true);
+      this.plafondService.deletePlafond(id).subscribe({
+        next: (response) => {
+          if (response.success) {
+            this.successMessage.set(response.message || 'Plafond berhasil dihapus');
+            setTimeout(() => this.successMessage.set(null), 3000);
+            this.loadPlafonds();
+          } else {
+            this.errorMessage.set(response.message);
+            setTimeout(() => this.errorMessage.set(''), 5000);
+          }
+          this.isLoading.set(false);
+        },
+        error: (error) => {
+          console.error('Error deleting plafond', error);
+          this.errorMessage.set(error.error?.message || 'Gagal menghapus plafond');
+          setTimeout(() => this.errorMessage.set(''), 5000);
+          this.isLoading.set(false);
+        }
+      });
+    }
+  }
+
   private handleFormError(err: any): void {
     this.isSubmitting.set(false);
     const errorResponse = err.error;

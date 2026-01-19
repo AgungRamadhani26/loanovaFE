@@ -76,6 +76,10 @@
                                 <h3 class="corp-title">{{ plafond.name }}</h3>
                                 <span class="corp-subtitle">{{ plafond.description }}</span>
                             </div>
+                            <button class="btn-icon-small delete" (click)="deletePlafond(plafond.id, plafond.name)" title="Delete"
+                                style="margin-left: auto; background: transparent; border: none; cursor: pointer; color: #ef4444;">
+                                <span class="material-icons-outlined">delete</span>
+                            </button>
                         </div>
 
                         <!-- Key Metrics Row -->

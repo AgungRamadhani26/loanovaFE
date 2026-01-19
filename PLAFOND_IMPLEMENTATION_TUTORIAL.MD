@@ -72,7 +72,7 @@ Komponen ini menggunakan strategi **Grid View** dengan tampilan kartu yang profe
 **Fitur Utama:**
 
 1.  **SSR Handling**: Menggunakan `isPlatformBrowser` untuk memastikan API call hanya berjalan di browser.
-2.  **Corporate Card Design**: Menampilkan data dalam bentuk kartu dengan *visual hierarchy* yang jelas (Header, Metrics, Footer).
+2.  **Corporate Card Design**: Menampilkan data dalam bentuk kartu dengan _visual hierarchy_ yang jelas (Header, Metrics, Footer).
 3.  **Dynamic Styling**: Menggunakan helper helper methods untuk menentukan warna aksen dan ikon berdasarkan nama paket (Platinum, Gold, dll).
 
 ```typescript
@@ -119,40 +119,40 @@ Template menggunakan Grid CSS untuk layout responsif tanpa kontrol paginasi visu
 
 <!-- Grid Container -->
 <div class="plafond-grid-container">
-    <div class="plafond-grid">
-        @for (plafond of filteredPlafonds(); track plafond.id) {
-        <div class="plafond-card-corporate">
-             <!-- Accent Line -->
-            <div class="card-accent" [ngClass]="getAccentClass(plafond.name)"></div>
-            
-            <div class="card-main">
-                <!-- Header with Icon & Title -->
-                <div class="card-header-corp">
-                    <div class="header-icon-wrapper" [ngClass]="getIconClass(plafond.name)">
-                        <span class="material-icons-outlined">workspace_premium</span>
-                    </div>
-                    <div class="header-text">
-                        <h3 class="corp-title">{{ plafond.name }}</h3>
-                        <span class="corp-subtitle">{{ plafond.description }}</span>
-                    </div>
-                </div>
+  <div class="plafond-grid">
+    @for (plafond of filteredPlafonds(); track plafond.id) {
+    <div class="plafond-card-corporate">
+      <!-- Accent Line -->
+      <div class="card-accent" [ngClass]="getAccentClass(plafond.name)"></div>
 
-                <!-- Metrics Box (Limit & Interest) -->
-                <div class="metrics-container">
-                    <div class="metric-box">
-                        <label>Maximum Limit</label>
-                        <div class="value">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</div>
-                    </div>
-                     <div class="metric-divider"></div>
-                     <div class="metric-box">
-                        <label>Interest Rate</label>
-                        <div class="value text-highlight">{{ plafond.interestRate }}%</div>
-                    </div>
-                </div>
-            </div>
+      <div class="card-main">
+        <!-- Header with Icon & Title -->
+        <div class="card-header-corp">
+          <div class="header-icon-wrapper" [ngClass]="getIconClass(plafond.name)">
+            <span class="material-icons-outlined">workspace_premium</span>
+          </div>
+          <div class="header-text">
+            <h3 class="corp-title">{{ plafond.name }}</h3>
+            <span class="corp-subtitle">{{ plafond.description }}</span>
+          </div>
         </div>
-        }
+
+        <!-- Metrics Box (Limit & Interest) -->
+        <div class="metrics-container">
+          <div class="metric-box">
+            <label>Maximum Limit</label>
+            <div class="value">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</div>
+          </div>
+          <div class="metric-divider"></div>
+          <div class="metric-box">
+            <label>Interest Rate</label>
+            <div class="value text-highlight">{{ plafond.interestRate }}%</div>
+          </div>
+        </div>
+      </div>
     </div>
+    }
+  </div>
 </div>
 ```
 
@@ -162,26 +162,78 @@ Menambahkan styling khusus untuk kartu "Corporate" dengan shadow halus dan trans
 ```css
 /* Corporate Card Styles */
 .plafond-card-corporate {
-    background: white;
-    border-radius: 12px;
-    border: 1px solid #e2e8f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-    /* ... transition ... */
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+  /* ... transition ... */
 }
 
 .plafond-card-corporate:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.1);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.1);
 }
 
 /* Color Themes (Accent & Icons) */
-.accent-gold { background: linear-gradient(90deg, #fef3c7, #fbbf24); }
-.icon-gold { background: #fffbeb; color: #d97706; }
+.accent-gold {
+  background: linear-gradient(90deg, #fef3c7, #fbbf24);
+}
+.icon-gold {
+  background: #fffbeb;
+  color: #d97706;
+}
 
 /* ... Silver, Bronze, Platinum themes ... */
 ```
 
-### D. Konfigurasi Routing
+### D. Implementasi Delete Plafond
+
+Kita menambahkan fitur hapus plafond (`DELETE /api/plafonds/{id}`) menggunakan konfirmasi sederhana `window.confirm`.
+
+**1. Service Helper (`plafond.service.ts`):**
+
+```typescript
+deletePlafond(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+}
+```
+
+**2. Component Logic (`plafond-list.component.ts`):**
+
+```typescript
+deletePlafond(id: number, name: string): void {
+  // Simple & Fast Confirmation
+  if (confirm(`Are you sure you want to delete plafond "${name}"? This action cannot be undone.`)) {
+    this.isLoading.set(true);
+    this.plafondService.deletePlafond(id).subscribe({
+      next: (response) => {
+        this.successMessage.set(response.message || 'Plafond berhasil dihapus');
+        setTimeout(() => this.successMessage.set(null), 3000);
+        this.loadPlafonds();
+      },
+      error: (error) => {
+        this.errorMessage.set(error.error?.message || 'Gagal menghapus plafond');
+        setTimeout(() => this.errorMessage.set(''), 5000);
+        this.isLoading.set(false);
+      }
+    });
+  }
+}
+```
+
+**3. UI Button (`plafond-list.component.html`):**
+
+```html
+<button
+  class="btn-icon-small delete"
+  (click)="deletePlafond(plafond.id, plafond.name)"
+  title="Delete"
+>
+  <span class="material-icons-outlined">delete</span>
+</button>
+```
+
+### E. Konfigurasi Routing
 
 File: `src/app/app.routes.ts`
 Menambahkan rute baru di bawah layout admin agar bisa diakses melalui URL `/admin/plafond`.

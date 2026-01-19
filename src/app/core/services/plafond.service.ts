@@ -27,4 +27,12 @@ export class PlafondService {
     createPlafond(request: PlafondRequest): Observable<ApiResponse<PlafondResponse>> {
         return this.http.post<ApiResponse<PlafondResponse>>(this.API_URL, request);
     }
+
+    /**
+     * Menghapus plafond
+     * Endpoint: DELETE /api/plafonds/{id}
+     */
+    deletePlafond(id: number): Observable<ApiResponse<void>> {
+        return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+    }
 }

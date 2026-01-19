@@ -49,10 +49,6 @@ export class BranchListComponent implements OnInit {
     isEditModalOpen = signal(false);
     editingBranchId = signal<number | null>(null);
 
-    // Modal State - DELETE
-    isDeleteModalOpen = signal(false);
-    deletingBranch = signal<BranchData | null>(null);
-
     // Shared UI State
     isSubmitting = signal(false);
     formError = signal<string | null>(null); // Error specific to details/form
@@ -230,46 +226,31 @@ export class BranchListComponent implements OnInit {
         this.isEditModalOpen.set(true);
     }
 
-    openDeleteModal(branch: BranchData): void {
-        this.deletingBranch.set(branch);
-        this.isDeleteModalOpen.set(true);
-        this.formError.set(null); // Reset global error state
-    }
-
-    closeDeleteModal(): void {
-        this.isDeleteModalOpen.set(false);
-        this.deletingBranch.set(null);
-        this.formError.set(null);
-    }
-
-    submitDeleteBranch(): void {
-        const branch = this.deletingBranch();
-        if (!branch) return;
-
-        this.isLoading.set(true);
-        this.formError.set(null);
-
-        this.branchService.deleteBranch(branch.id).subscribe({
-            next: (response) => {
-                this.successMessage.set(response.message || 'Branch deleted successfully');
-                setTimeout(() => this.successMessage.set(null), 3000);
-
-                this.closeDeleteModal();
-                this.loadBranches();
-            },
-            error: (error) => {
-                this.isLoading.set(false);
-                // Handle 400 Bad Request (Business Logic Error: e.g. Has Active Loans)
-                if (error.error && error.error.message) {
-                    this.formError.set(error.error.message);
-                } else {
-                    this.formError.set('Failed to delete branch. It may be in use.');
+    deleteBranch(id: number, name: string): void {
+        if (confirm(`Are you sure you want to delete branch "${name}"? This action cannot be undone.`)) {
+            this.isLoading.set(true);
+            this.branchService.deleteBranch(id).subscribe({
+                next: (response) => {
+                    this.successMessage.set(response.message || 'Branch deleted successfully');
+                    setTimeout(() => this.successMessage.set(null), 3000);
+                    this.loadBranches();
+                },
+                error: (error) => {
+                    console.error('Error deleting branch', error);
+                    // Handle 400 Bad Request (Business Logic Error: e.g. Has Active Loans)
+                    if (error.error && error.error.message) {
+                        this.error.set(error.error.message);
+                    } else {
+                        this.error.set(error.error?.message || 'Failed to delete branch');
+                    }
+                    setTimeout(() => this.error.set(null), 5000);
+                    this.isLoading.set(false);
+                },
+                complete: () => {
+                   this.isLoading.set(false);
                 }
-            },
-            complete: () => {
-                this.isLoading.set(false);
-            }
-        });
+            });
+        }
     }
 
 
