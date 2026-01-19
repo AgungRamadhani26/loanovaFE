@@ -58,25 +58,79 @@ export class PlafondService {
 ### C. Membuat Komponen Tampilan (Plafond List)
 
 File: `src/app/features/plafonds/plafond-list.component.ts`
-Komponen ini diinisialisasi dengan struktur table yang mirip dengan menu Branch:
+Komponen ini menggunakan strategi **Client-Side Filter & Pagination** dengan dukungan **Server-Side Rendering (SSR)**.
 
-- Menggunakan `CommonModule` dan `FormsModule`
-- State Management dengan Angular Signals (`plafonds`, `searchQuery`)
-- Dilengkapi Pagination dan Search Filter.
-- **Improved Search**: Pencarian mencakup nama, deskripsi, nominal, bunga, dan tenor.
-- **SSR Handling**: Menggunakan `isPlatformBrowser` untuk mencegah error 401 saat server-side rendering.
+**Fitur Utama:**
+
+1.  **SSR Handling**: Menggunakan `isPlatformBrowser` untuk memastikan API call hanya berjalan di browser (menghindari error akses `localStorage` di server).
+2.  **Advanced Search logic**: Menggunakan Regex untuk menghapus simbol mata uang/persen saat pencarian angka.
+3.  **Row Styling Logic**: Method `getRowClass` untuk menentukan warna baris berdasarkan nama paket.
+
+```typescript
+// Implementasi Search Logic dengan Pembersihan Simbol
+filteredPlafonds = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    return this.plafonds().filter(p => {
+        // Membersihkan format angka (misal "5.5%" -> "5.5") untuk pencarian yang akurat
+        const cleanRate = p.interestRate.toString();
+        const cleanAmount = p.maxAmount.toString();
+
+        const searchStr = `${p.name} ${p.description} ${cleanAmount} ${cleanRate} ${p.tenorMin}-${p.tenorMax}`.toLowerCase();
+
+        // Logic search: Cocokkan query yang sudah dibersihkan simbolnya
+        // Contoh: User ketik "5.5" akan match dengan "5.5%"
+        const cleanQuery = query.replace(/[Rp,%]/g, '').trim();
+        return searchStr.includes(query) || searchStr.includes(cleanQuery);
+    });
+});
+
+// Implementasi SSR Handling
+ngOnInit(): void {
+    if (isPlatformBrowser(this.platformId)) {
+        this.loadPlafonds();
+    }
+}
+```
 
 File: `src/app/features/plafonds/plafond-list.component.html`
-Menggunakan **Table Layout** untuk keseragaman UI dengan halaman manajemen lainnya:
+Template menggunakan `[ngClass]` untuk styling dinamis dan pipa `currency` untuk format Rupiah.
 
-- Header dengan Title
-- Summary Card (Total Plafonds)
-- Search Box
-- Table Data (Nama, Deskripsi, Max Pinjaman, Bunga, Tenor)
-- **Dynamic Row Styling**: Memberikan warna latar berbeda sesuai jenis plafond (Gold/Silver/Bronze).
+```html
+<!-- Contoh Penggunaan Dynamic Class & Currency Pipe -->
+<tr [ngClass]="getRowClass(plafond.name)" class="hover:bg-opacity-80 transition-colors">
+  <!-- ... -->
+  <td class="font-medium text-slate-700">
+    {{ plafond.maxAmount | currency:'IDR':'symbol':'1.0-0' }}
+  </td>
+</tr>
+```
 
 File: `src/app/features/plafonds/plafond-list.component.css`
-Menggunakan styling yang seragam dengan Branch List, ditambah CSS khusus `.row-gold`, `.row-silver`, `.row-bronze`.
+Menambahkan styling khusus untuk membedakan jenis paket pinjaman secara visual.
+
+```css
+/* Styling Baris Tabel Berdasarkan Paket */
+.row-gold {
+  background-color: #fffbeb !important; /* Amber-50 */
+}
+.row-gold:hover {
+  background-color: #fef3c7 !important; /* Amber-100 */
+}
+
+.row-silver {
+  background-color: #f8fafc !important; /* Slate-50 */
+}
+.row-silver:hover {
+  background-color: #f1f5f9 !important; /* Slate-100 */
+}
+
+.row-bronze {
+  background-color: #fff7ed !important; /* Orange-50 */
+}
+.row-bronze:hover {
+  background-color: #ffedd5 !important; /* Orange-100 */
+}
+```
 
 ### D. Konfigurasi Routing
 
