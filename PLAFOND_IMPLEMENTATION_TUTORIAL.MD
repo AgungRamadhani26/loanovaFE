@@ -4,27 +4,19 @@ Dokumen ini menjelaskan langkah-langkah implementasi tampilan menu **Daftar Plaf
 
 ## 1. Persiapan Backend (Konteks)
 
-Backend sudah menyediakan endpoint API untuk mengambil daftar plafond.
+Backend menyediakan endpoint API untuk manajemen plafond (CRUD).
 
-- **Endpoint**: `GET /api/plafonds` (Protected)
-- **Endpoint Public**: `GET /api/plafonds/public`
-- **Response Format**:
-  ```json
-  {
-      "success": true,
-      "message": "Berhasil mengambil daftar plafond",
-      "data": [ ...list of plafonds... ],
-      "code": 200,
-      "timestamp": "..."
-  }
-  ```
+- **GET Endpoint**: `GET /api/plafonds` (Protected: `PLAFOND:READ`)
+- **POST Endpoint**: `POST /api/plafonds` (Protected: `PLAFOND:CREATE`)
+- **Validation Error (400)**: Mengembalikan object `data.errors` jika validasi input gagal.
+- **Conflict Error (409)**: Mengembalikan error jika nama plafond sudah ada.
 
 ## 2. Implementasi Frontend (Angular)
 
-### A. Membuat Model Response
+### A. Membuat Model Data
 
 File: `src/app/core/models/response/plafond-response.model.ts`
-Model ini mendefinisikan struktur data plafond yang diterima dari API.
+Model untuk data yang diterima dari API (READ).
 
 ```typescript
 export interface PlafondResponse {
@@ -38,19 +30,36 @@ export interface PlafondResponse {
 }
 ```
 
+File: `src/app/core/models/request/plafond-request.model.ts`
+Model untuk data yang dikirim saat membuat plafond baru (CREATE).
+
+```typescript
+export interface PlafondRequest {
+  name: string;
+  description: string;
+  maxAmount: number; // BigDecimal di Backend
+  interestRate: number; // Float/Double
+  tenorMin: number; // Integer
+  tenorMax: number; // Integer
+}
+```
+
 ### B. Membuat Service Integration
 
 File: `src/app/core/services/plafond.service.ts`
-Service ini bertanggung jawab menghubungi API backend. Token autentikasi otomatis ditangani oleh `AuthInterceptor`.
 
 ```typescript
 @Injectable({ providedIn: 'root' })
 export class PlafondService {
   private http = inject(HttpClient);
-  private readonly API_URL = '/api/plafonds'; // Proxy akan mengarahkan ke backend
+  private readonly API_URL = '/api/plafonds';
 
   getAllPlafonds(): Observable<ApiResponse<PlafondResponse[]>> {
     return this.http.get<ApiResponse<PlafondResponse[]>>(this.API_URL);
+  }
+
+  createPlafond(request: PlafondRequest): Observable<ApiResponse<PlafondResponse>> {
+    return this.http.post<ApiResponse<PlafondResponse>>(this.API_URL, request);
   }
 }
 ```
@@ -58,51 +67,47 @@ export class PlafondService {
 ### C. Membuat Komponen Tampilan (Plafond List)
 
 File: `src/app/features/plafonds/plafond-list.component.ts`
-Komponen ini menggunakan strategi **Client-Side Filter & Pagination** dengan dukungan **Server-Side Rendering (SSR)**.
+Komponen ini menggunakan strategi **Client-Side Filter & Pagination** dengan dukungan **Server-Side Rendering (SSR)** dan **Modal Form** untuk aksi Create.
 
 **Fitur Utama:**
 
-1.  **SSR Handling**: Menggunakan `isPlatformBrowser` untuk memastikan API call hanya berjalan di browser (menghindari error akses `localStorage` di server).
-2.  **Advanced Search logic**: Menggunakan Regex untuk menghapus simbol mata uang/persen saat pencarian angka.
-3.  **Row Styling Logic**: Method `getRowClass` untuk menentukan warna baris berdasarkan nama paket.
+1.  **SSR Handling**: Menggunakan `isPlatformBrowser` untuk memastikan API call hanya berjalan di browser.
+2.  **Advanced Search logic**: Menggunakan Regex untuk mixed search (Text & Number).
+3.  **Create Action**: Modal form dengan validasi error dari backend status 400 & 409.
 
 ```typescript
-// Implementasi Search Logic dengan Pembersihan Simbol
-filteredPlafonds = computed(() => {
-    const query = this.searchQuery().toLowerCase().trim();
-    return this.plafonds().filter(p => {
-        // Membersihkan format angka (misal "5.5%" -> "5.5") untuk pencarian yang akurat
-        const cleanRate = p.interestRate.toString();
-        const cleanAmount = p.maxAmount.toString();
-
-        const searchStr = `${p.name} ${p.description} ${cleanAmount} ${cleanRate} ${p.tenorMin}-${p.tenorMax}`.toLowerCase();
-
-        // Logic search: Cocokkan query yang sudah dibersihkan simbolnya
-        // Contoh: User ketik "5.5" akan match dengan "5.5%"
-        const cleanQuery = query.replace(/[Rp,%]/g, '').trim();
-        return searchStr.includes(query) || searchStr.includes(cleanQuery);
+// Implementasi Create Action dengan Validasi
+submitPlafond(): void {
+    this.plafondService.createPlafond(this.newPlafond()).subscribe({
+        error: (err) => {
+            if (err.status === 400) {
+                // Mapping field errors dari Backend
+                this.validationErrors.set(err.error.data.errors);
+            } else if (err.status === 409) {
+                // Handling duplicate name
+                this.validationErrors.set({ name: err.error.message });
+            }
+        }
     });
-});
-
-// Implementasi SSR Handling
-ngOnInit(): void {
-    if (isPlatformBrowser(this.platformId)) {
-        this.loadPlafonds();
-    }
 }
 ```
 
 File: `src/app/features/plafonds/plafond-list.component.html`
-Template menggunakan `[ngClass]` untuk styling dinamis dan pipa `currency` untuk format Rupiah.
+Template menggunakan:
+
+- `[ngClass]` untuk styling dinamis baris tabel.
+- Modal dengan backdrop blur untuk form input.
+- `[(ngModel)]` binding untuk input form.
 
 ```html
-<!-- Contoh Penggunaan Dynamic Class & Currency Pipe -->
-<tr [ngClass]="getRowClass(plafond.name)" class="hover:bg-opacity-80 transition-colors">
-  <!-- ... -->
-  <td class="font-medium text-slate-700">
-    {{ plafond.maxAmount | currency:'IDR':'symbol':'1.0-0' }}
-  </td>
-</tr>
+<!-- Contoh Modal Input dengan Error Message -->
+<div class="form-group">
+  <label>Plafond Name</label>
+  <input [(ngModel)]="newPlafond().name" [class.border-red-500]="validationErrors()['name']" />
+  @if (validationErrors()['name']) {
+  <p class="text-red-500">{{ validationErrors()['name'] }}</p>
+  }
+</div>
 ```
 
 File: `src/app/features/plafonds/plafond-list.component.css`

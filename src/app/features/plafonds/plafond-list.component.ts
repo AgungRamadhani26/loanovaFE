@@ -3,6 +3,7 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { PlafondService } from '../../core/services/plafond.service';
 import { PlafondResponse } from '../../core/models/response/plafond-response.model';
+import { PlafondRequest } from '../../core/models/request/plafond-request.model';
 
 @Component({
   selector: 'app-plafond-list',
@@ -20,6 +21,23 @@ export class PlafondListComponent implements OnInit {
   isLoading = signal<boolean>(true);
   searchQuery = signal<string>('');
   errorMessage = signal<string>('');
+  successMessage = signal<string | null>(null);
+
+  // Modal & Form State
+  isModalOpen = signal<boolean>(false);
+  isSubmitting = signal<boolean>(false);
+  validationErrors = signal<{ [key: string]: string }>({});
+
+  initialPlafondState: PlafondRequest = {
+    name: '',
+    description: '',
+    maxAmount: 0,
+    interestRate: 0,
+    tenorMin: 0,
+    tenorMax: 0
+  };
+
+  newPlafond = signal<PlafondRequest>({ ...this.initialPlafondState });
 
   // Pagination State
   currentPage = signal<number>(1);
@@ -98,6 +116,7 @@ export class PlafondListComponent implements OnInit {
 
   getRowClass(name: string): string {
     const lowerName = name.toLowerCase();
+    if (lowerName.includes('platinum')) return 'row-platinum';
     if (lowerName.includes('gold')) return 'row-gold';
     if (lowerName.includes('silver')) return 'row-silver';
     if (lowerName.includes('bronze')) return 'row-bronze';
@@ -125,6 +144,55 @@ export class PlafondListComponent implements OnInit {
         console.error('Error fetching plafonds', error);
         this.errorMessage.set('Gagal memuat data plafond. Silakan coba lagi.');
         this.isLoading.set(false);
+      }
+    });
+  }
+
+  /**
+   * FORM & MODAL ACTIONS
+   */
+  openModal(): void {
+    this.newPlafond.set({ ...this.initialPlafondState });
+    this.validationErrors.set({});
+    this.isModalOpen.set(true);
+  }
+
+  closeModal(): void {
+    this.isModalOpen.set(false);
+  }
+
+  submitPlafond(): void {
+    this.isSubmitting.set(true);
+    this.validationErrors.set({}); // Reset errors
+
+    this.plafondService.createPlafond(this.newPlafond()).subscribe({
+      next: (response) => {
+        if (response.success) {
+          this.loadPlafonds(); // Reload list
+          this.closeModal();
+          // Reset Default
+          this.newPlafond.set({ ...this.initialPlafondState });
+
+          // Show Success Toast
+          this.successMessage.set(response.message || 'Plafond berhasil ditambahkan!');
+          setTimeout(() => this.successMessage.set(null), 3000);
+        }
+        this.isSubmitting.set(false);
+      },
+      error: (err) => {
+        this.isSubmitting.set(false);
+        const errorResponse = err.error;
+
+        if (err.status === 400 && errorResponse?.data?.errors) {
+          // Map validation errors from Backend (Bad Request)
+          this.validationErrors.set(errorResponse.data.errors);
+        } else if (err.status === 409) {
+          // Conflict (Name already exists)
+          this.validationErrors.set({ name: errorResponse.message });
+        } else {
+          // General Server Error
+          this.errorMessage.set(errorResponse?.message || 'Terjadi kesalahan sistem');
+        }
       }
     });
   }
