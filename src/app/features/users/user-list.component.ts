@@ -162,14 +162,20 @@ export class UserListComponent implements OnInit {
         }
     }
 
-    prevPage(): void {
+    previousPage(): void {
         if (this.currentPage() > 1) {
             this.currentPage.update(p => p - 1);
         }
     }
 
-    setPage(page: number): void {
+    goToPage(page: number): void {
         this.currentPage.set(page);
+    }
+
+    onPageSizeChange(event: Event): void {
+        const select = event.target as HTMLSelectElement;
+        this.pageSize.set(Number(select.value));
+        this.currentPage.set(1);
     }
 
     /**

@@ -471,46 +471,70 @@
 }
 
 /* FOOTER & PAGINATION */
-.table-footer {
+.pagination-wrapper {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding: 20px 24px;
+    border-top: 1px solid #f1f5f9;
+    background: #fafbfc;
+    border-radius: 0 0 20px 20px;
 }
 
-.pagination {
+.pagination-info {
     display: flex;
-    gap: 4px;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: #64748b;
 }
 
-.btn-pagination {
-    width: 32px;
-    height: 32px;
+.page-size-selector {
+    padding: 6px 10px;
     border-radius: 8px;
-    background: white;
     border: 1px solid #e2e8f0;
-    color: #64748b;
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+    background: white;
+}
+
+.pagination-controls {
+    display: flex;
+    gap: 6px;
+}
+
+.page-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
+    background: white;
+    border: 1px solid #e2e8f0;
+    color: #64748b;
     font-size: 0.875rem;
     font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
 }
 
-.btn-pagination:hover:not(:disabled) {
-    background: #f8fafc;
+.page-btn:hover:not(:disabled) {
+    background: #f1f5f9;
     border-color: #cbd5e1;
+    color: #1e293b;
 }
 
-.btn-pagination.active {
+.page-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-btn.active {
     background: #2563eb;
     color: white;
     border-color: #2563eb;
-}
-
-.btn-pagination:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
 }
 
 /* SKELETON LOADING */
@@ -529,5 +553,24 @@
 
     to {
         background-position: -200% 0;
+    }
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+    .pagination-wrapper {
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .pagination-info {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .pagination-controls {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 }

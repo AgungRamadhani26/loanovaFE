@@ -6,6 +6,7 @@ import { AdminLayoutComponent } from './layout/admin/admin-layout/admin-layout.c
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { UserListComponent } from './features/users/user-list.component';
 import { BranchListComponent } from './features/branches/branch-list.component';
+import { PlafondListComponent } from './features/plafonds/plafond-list.component';
 import { authGuard } from './core/guards/auth.guard';
 
 /**
@@ -48,7 +49,7 @@ export const routes: Routes = [
             { path: 'roles', component: DashboardComponent },
             { path: 'loans', component: DashboardComponent },
             { path: 'history', component: DashboardComponent },
-            { path: 'plafond', component: DashboardComponent },
+            { path: 'plafond', component: PlafondListComponent },
         ]
     },
 

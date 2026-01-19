@@ -194,25 +194,29 @@
         </div>
 
         <!-- Table Footer (Pagination) -->
-        <div class="table-footer p-6 bg-slate-50/50 border-t border-slate-100 rounded-b-2xl">
-            <span class="text-sm text-slate-500">
-                Showing <b>{{ showingFrom() }}</b> to
-                <b>{{ showingTo() }}</b> of
-                <b>{{ filteredUsers().length }}</b> users
-            </span>
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                <span>Showing {{ showingFrom() }} to {{ showingTo() }} of {{ filteredUsers().length }} entries</span>
+                <select class="page-size-selector" [value]="pageSize()" (change)="onPageSizeChange($event)">
+                    <option value="5">5 per page</option>
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
 
-            <div class="pagination">
-                <button class="btn-pagination" (click)="prevPage()" [disabled]="currentPage() === 1">
+            <div class="pagination-controls">
+                <button class="page-btn" [disabled]="currentPage() === 1" (click)="previousPage()">
                     <span class="material-icons-outlined">chevron_left</span>
                 </button>
 
-                @for (p of pages(); track p) {
-                <button class="btn-pagination" [class.active]="currentPage() === p" (click)="setPage(p)">
-                    {{ p }}
+                @for (page of pages(); track page) {
+                <button class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">
+                    {{ page }}
                 </button>
                 }
 
-                <button class="btn-pagination" (click)="nextPage()" [disabled]="currentPage() === totalPages()">
+                <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
                     <span class="material-icons-outlined">chevron_right</span>
                 </button>
             </div>

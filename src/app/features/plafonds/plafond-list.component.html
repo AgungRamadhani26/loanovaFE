@@ -1,0 +1,131 @@
+<div class="branch-management-container">
+    <!-- HEADER SECTION -->
+    <div class="header-section">
+        <div class="title-wrapper">
+            <h1 class="page-title">Plafond Management</h1>
+            <p class="page-subtitle">View and manage loan plafond limits and interest rates.</p>
+        </div>
+    </div>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-100 text-blue-600">
+                <span class="material-icons-outlined">monetization_on</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ plafonds().length }}</span>
+                <span class="stat-label">Total Plafonds</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="table-card shadow-sm border border-slate-200">
+        <!-- Search & Filter Bar -->
+        <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
+            <div class="search-box">
+                <span class="material-icons-outlined">search</span>
+                <input type="text" placeholder="Search by name or description..."
+                    [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-icon" (click)="loadPlafonds()">
+                    <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE CONTENT -->
+        @if (isLoading()) {
+        <!-- LOADING STATE -->
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+        } @else if (filteredPlafonds().length === 0) {
+        <!-- EMPTY STATE -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <span class="material-icons-outlined">monetization_on</span>
+            </div>
+            <h3 class="empty-title">No Plafonds Found</h3>
+            <p class="empty-message">
+                @if (searchQuery()) {
+                Try adjusting your search criteria
+                } @else {
+                No plafond data available at the moment
+                }
+            </p>
+        </div>
+        } @else {
+        <!-- DATA TABLE -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">NO</th>
+                        <th>NAME</th>
+                        <th>DESCRIPTION</th>
+                        <th>MAX AMOUNT</th>
+                        <th>INTEREST RATE</th>
+                        <th>TENOR RANGE</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (plafond of paginatedPlafonds(); track plafond.id; let i = $index) {
+                    <tr [ngClass]="getRowClass(plafond.name)">
+                        <td style="text-align: center; font-weight: 600; color: #64748b;">
+                            {{ getRowNumber(i) }}
+                        </td>
+                        <td>
+                            <span class="branch-name">{{ plafond.name }}</span>
+                        </td>
+                        <td>
+                            <span class="branch-address">{{ plafond.description }}</span>
+                        </td>
+                        <td>
+                            <span class="branch-code">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</span>
+                        </td>
+                         <td>
+                            <span class="branch-name text-blue-600">{{ plafond.interestRate }}%</span>
+                        </td>
+                         <td>
+                            <span class="text-slate-600 font-medium">{{ plafond.tenorMin }} - {{ plafond.tenorMax }} Months</span>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                <span>Showing {{ showingFrom() }} to {{ showingTo() }} of {{ filteredPlafonds().length }} entries</span>
+                <select class="page-size-selector" [value]="pageSize()" (change)="onPageSizeChange($event)">
+                    <option value="5">5 per page</option>
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
+
+            <div class="pagination-controls">
+                <button class="page-btn" [disabled]="currentPage() === 1" (click)="previousPage()">
+                    <span class="material-icons-outlined">chevron_left</span>
+                </button>
+
+                @for (page of pages(); track page) {
+                <button class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">
+                    {{ page }}
+                </button>
+                }
+
+                <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                    <span class="material-icons-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+</div>
