@@ -1,6 +1,8 @@
-import { Component, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { PlafondService } from '../../core/services/plafond.service';
+import { PlafondResponse } from '../../core/models/response/plafond-response.model';
 
 /**
  * LandingPageComponent
@@ -14,34 +16,13 @@ import { FormsModule } from '@angular/forms';
     templateUrl: './landing-page.component.html',
     styleUrl: './landing-page.component.css'
 })
-export class LandingPageComponent {
-    /**
-     * State Management menggunakan Signals: Jumlah Pinjaman
-     * Default: 10,000,000
-     */
-    readonly amount = signal(10000000);
+export class LandingPageComponent implements OnInit {
+    private plafondService = inject(PlafondService);
+    private platformId = inject(PLATFORM_ID);
 
-    /**
-     * State Management menggunakan Signals: Tenor (Bulan)
-     * Default: 12 Bulan
-     */
-    readonly months = signal(12);
-
-    /**
-     * Computed Signal: Menghitung total bunga secara otomatis berdasarkan amount & months
-     * Rumus: Pokok * 12% * (Tenor dalam tahun)
-     */
-    readonly interest = computed(() => this.amount() * 0.12 * (this.months() / 12));
-
-    /**
-     * Computed Signal: Menghitung total pengembalian (Pokok + Bunga)
-     */
-    readonly total = computed(() => this.amount() + this.interest());
-
-    /**
-     * Computed Signal: Menghitung cicilan bulanan
-     */
-    readonly monthly = computed(() => Math.round(this.total() / this.months()));
+    // State Management for Plafonds
+    plafonds = signal<PlafondResponse[]>([]);
+    isLoadingPlafonds = signal<boolean>(true);
 
     /**
      * Data statis untuk Alur Pengajuan
@@ -53,4 +34,49 @@ export class LandingPageComponent {
         { title: 'Verifikasi', desc: 'Tim kami akan memverifikasi data Anda.' },
         { title: 'Cair', desc: 'Dana langsung masuk ke rekening Anda.' }
     ];
+
+    ngOnInit(): void {
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadPublicPlafonds();
+        }
+    }
+
+    loadPublicPlafonds() {
+        this.isLoadingPlafonds.set(true);
+        this.plafondService.getPublicPlafonds().subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.plafonds.set(response.data);
+                }
+                this.isLoadingPlafonds.set(false);
+            },
+            error: (err) => {
+                console.error('Failed to load public plafonds', err);
+                this.isLoadingPlafonds.set(false);
+            }
+        });
+    }
+
+    // Helper functions for dynamic styling based on Plafond Name
+    getPlafondIcon(name: string): string {
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes('bronze')) return '🥉';
+        if (lowerName.includes('silver')) return '🥈';
+        if (lowerName.includes('gold')) return '🥇';
+        if (lowerName.includes('platinum')) return '💎';
+        return '💰';
+    }
+
+    isPopular(name: string): boolean {
+        return name.toLowerCase().includes('silver');
+    }
+
+    getThemeColor(name: string): string {
+        const lower = name.toLowerCase();
+        if (lower.includes('bronze')) return 'amber';
+        if (lower.includes('silver')) return 'slate'; // or blue for border
+        if (lower.includes('gold')) return 'yellow';
+        if (lower.includes('platinum')) return 'purple';
+        return 'blue'; // default
+    }
 }

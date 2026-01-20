@@ -21,6 +21,14 @@ export class PlafondService {
     }
 
     /**
+     * Mengambil daftar plafond (Public)
+     * Endpoint: GET /api/plafonds/public
+     */
+    getPublicPlafonds(): Observable<ApiResponse<PlafondResponse[]>> {
+        return this.http.get<ApiResponse<PlafondResponse[]>>(`${this.API_URL}/public`);
+    }
+
+    /**
      * Membuat plafond baru
      * Endpoint: POST /api/plafonds
      */
