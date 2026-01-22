@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loanova Logo Concepts</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            color: #334155;
+        }
+        h1 {
+            margin-bottom: 40px;
+            color: #0f172a;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            width: 100%;
+            max-width: 1200px;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .logo-display {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            font-size: 1.25rem;
+            margin-bottom: 10px;
+            color: #1e293b;
+        }
+        p {
+            text-align: center;
+            color: #64748b;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .bg-dark {
+            background-color: #0f172a;
+            width: 100%;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .logo-small {
+            height: 40px;
+            width: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Loanova - Redesign Concepts</h1>
+
+    <div class="container">
+        <!-- CONCEPT 1: Growth & Finance -->
+        <div class="card">
+            <svg class="logo-display" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="200" height="200" rx="40" fill="#2563EB"/>
+                <!-- L Shape transforming into chart -->
+                <path d="M60 50V140C60 145.523 64.4772 150 70 150H150" stroke="white" stroke-width="20" stroke-linecap="round"/>
+                <path d="M100 110L125 85L150 110" stroke="#4ADE80" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                <circle cx="150" cy="65" r="10" fill="#4ADE80"/>
+            </svg>
+            <h2>1. The Financial Growth</h2>
+            <p>Konsep ini mempertahankan warna biru namun menambahkan elemen grafik kenaikan (hijau) yang terintegrasi. Simbol 'L' berfungsi sebagai sumbu grafik, melambangkan pertumbuhan finansial nasabah.</p>
+            <div class="bg-dark">
+                 <svg class="logo-small" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M60 50V140C60 145.523 64.4772 150 70 150H150" stroke="white" stroke-width="20" stroke-linecap="round"/>
+                    <path d="M100 110L125 85L150 110" stroke="#4ADE80" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="150" cy="65" r="10" fill="#4ADE80"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- CONCEPT 2: Modern Tech (Nova) -->
+        <div class="card">
+            <svg class="logo-display" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#3B82F6;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#1D4ED8;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect width="200" height="200" rx="100" fill="url(#grad2)"/>
+                <!-- Abstract L with Spark -->
+                <path d="M75 60V130C75 135.523 79.4772 140 85 140H140" stroke="white" stroke-width="18" stroke-linecap="round"/>
+                <!-- Spark / Nova -->
+                <path d="M140 60L145 70L155 75L145 80L140 90L135 80L125 75L135 70L140 60Z" fill="#FBBF24"/>
+            </svg>
+            <h2>2. The Nova Spark</h2>
+            <p>Mengambil nama "Nova" (bintang baru/kilavan). Bentuk lingkaran lebih bersahabat & modern. Aksen emas melambangkan nilai (value) dan harapan baru bagi peminjam.</p>
+            <div class="bg-dark">
+                <svg class="logo-small" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M75 60V130C75 135.523 79.4772 140 85 140H140" stroke="white" stroke-width="18" stroke-linecap="round"/>
+                    <path d="M140 60L145 70L155 75L145 80L140 90L135 80L125 75L135 70L140 60Z" fill="#FBBF24"/>
+                </svg>
+            </div>
+        </div>
+
+        <!-- CONCEPT 3: Trust & Corporate -->
+        <div class="card">
+            <svg class="logo-display" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Interlocking Shapes -->
+                <path d="M50 40H110C132.091 40 150 57.9086 150 80V160H90C67.9086 160 50 142.091 50 120V40Z" fill="#1E40AF"/>
+                <path d="M150 160H110C110 160 110 120 110 120H150V160Z" fill="#60A5FA"/>
+                <path d="M50 40H90V80H50V40Z" fill="#93C5FD"/>
+                <text x="75" y="115" font-family="Arial, sans-serif" font-weight="bold" font-size="60" fill="white">L</text>
+            </svg>
+            <h2>3. Corporate Geometric</h2>
+            <p>Gaya geometris abstrak yang membentuk huruf L dari blok-blok bangunan. Melambangkan fondasi yang kuat, struktur, dan stabilitas institusi keuangan.</p>
+            <div class="bg-dark">
+                <svg class="logo-small" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                     <path d="M50 40H110C132.091 40 150 57.9086 150 80V160H90C67.9086 160 50 142.091 50 120V40Z" fill="#1E40AF"/>
+                    <path d="M150 160H110C110 160 110 120 110 120H150V160Z" fill="#60A5FA"/>
+                    <path d="M50 40H90V80H50V40Z" fill="#93C5FD"/>
+                    <text x="75" y="115" font-family="Arial, sans-serif" font-weight="bold" font-size="60" fill="white">L</text>
+                </svg>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
