@@ -1,132 +1,185 @@
-# Tutorial Implementasi Menu Plafond (Frontend)
+# Tutorial Implementasi Fitur Manajemen Plafond (Plafond Management)
 
-Dokumen ini menjelaskan langkah-langkah implementasi tampilan menu **Daftar Plafond** pada aplikasi web Loanova (Frontend).
+Dokumen ini menjelaskan implementasi fitur **Plafond Management** yang digunakan untuk mengelola limit pinjaman dan suku bunga. Fitur ini mencakup listing plafond dalam bentuk card grid yang menarik, create plafond dengan modal form, dan delete plafond.
 
-## 1. Persiapan Backend (Konteks)
+---
 
-Backend menyediakan endpoint API untuk manajemen plafond (CRUD).
+## DAFTAR ISI
 
-- **GET Endpoint**: `GET /api/plafonds` (Protected: `PLAFOND:READ`)
-- **POST Endpoint**: `POST /api/plafonds` (Protected: `PLAFOND:CREATE`)
-- **Validation Error (400)**: Mengembalikan object `data.errors` jika validasi input gagal.
-- **Conflict Error (409)**: Mengembalikan error jika nama plafond sudah ada.
+1.  **Backend Integration** (Model & Service)
+2.  **Display Logic** (Component, Signal)
+3.  **UI Template** (Card Grid Layout)
+4.  **Modal Form** (Create Plafond dengan Form Grid)
+5.  **Styling & UX** (Konsistensi Desain)
 
-## 2. Implementasi Frontend (Angular)
+---
 
-### A. Membuat Model Data
+## 1. Backend Integration
 
-File: `src/app/core/models/response/plafond-response.model.ts`
-Model untuk data yang diterima dari API (READ).
+### A. Data Model (`plafond-response.model.ts`)
+
+Model data plafond yang diterima dari API backend.
 
 ```typescript
-export interface PlafondResponse {
+export interface PlafondData {
   id: number;
-  name: string;
-  description: string;
-  maxAmount: number;
-  interestRate: number;
-  tenorMin: number;
-  tenorMax: number;
+  name: string;              // Nama tier (Gold, Platinum, dll)
+  description: string;       // Deskripsi singkat
+  maxAmount: number;         // Limit maksimal pinjaman (IDR)
+  interestRate: number;      // Suku bunga (%)
+  tenorMin: number;          // Tenor minimum (bulan)
+  tenorMax: number;          // Tenor maksimum (bulan)
 }
 ```
 
-File: `src/app/core/models/request/plafond-request.model.ts`
-Model untuk data yang dikirim saat membuat plafond baru (CREATE).
+### B. Plafond Service (`plafond.service.ts`)
+
+Service untuk komunikasi dengan backend API.
 
 ```typescript
-export interface PlafondRequest {
-  name: string;
-  description: string;
-  maxAmount: number; // BigDecimal di Backend
-  interestRate: number; // Float/Double
-  tenorMin: number; // Integer
-  tenorMax: number; // Integer
-}
-```
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { ApiResponse } from '../models/response/api-response.model';
+import { PlafondData } from '../models/response/plafond-response.model';
+import { PlafondRequest } from '../models/request/plafond-request.model';
 
-### B. Membuat Service Integration
-
-File: `src/app/core/services/plafond.service.ts`
-
-```typescript
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root',
+})
 export class PlafondService {
   private http = inject(HttpClient);
   private readonly API_URL = '/api/plafonds';
 
-  getAllPlafonds(): Observable<ApiResponse<PlafondResponse[]>> {
-    return this.http.get<ApiResponse<PlafondResponse[]>>(this.API_URL);
+  /**
+   * Mengambil semua data plafond
+   */
+  getAllPlafonds(): Observable<ApiResponse<PlafondData[]>> {
+    return this.http.get<ApiResponse<PlafondData[]>>(this.API_URL);
   }
 
-  createPlafond(request: PlafondRequest): Observable<ApiResponse<PlafondResponse>> {
-    return this.http.post<ApiResponse<PlafondResponse>>(this.API_URL, request);
+  /**
+   * Membuat plafond baru
+   */
+  createPlafond(data: PlafondRequest): Observable<ApiResponse<PlafondData>> {
+    return this.http.post<ApiResponse<PlafondData>>(this.API_URL, data);
+  }
+
+  /**
+   * Menghapus plafond
+   */
+  deletePlafond(id: number): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
   }
 }
 ```
 
-### C. Membuat Komponen Tampilan (Plafond List - Corporate Card View)
+---
 
-File: `src/app/features/plafonds/plafond-list.component.ts`
-Komponen ini menggunakan strategi **Grid View** dengan tampilan kartu yang profesional ("Corporate Look").
+## 2. Display Logic (`plafond-list.component.ts`)
 
-**Fitur Utama:**
+Component menggunakan **Angular Signals** untuk state management yang reaktif.
 
-1.  **SSR Handling**: Menggunakan `isPlatformBrowser` untuk memastikan API call hanya berjalan di browser.
-2.  **Corporate Card Design**: Menampilkan data dalam bentuk kartu dengan _visual hierarchy_ yang jelas (Header, Metrics, Footer).
-3.  **Dynamic Styling**: Menggunakan helper helper methods untuk menentukan warna aksen dan ikon berdasarkan nama paket (Platinum, Gold, dll).
+### A. State Management
 
 ```typescript
-// Logic Penanganan Create
-submitPlafond(): void {
-  // ...
-  this.plafondService.createPlafond(request);
-  // ...
-}
+// Data State
+plafonds = signal<PlafondData[]>([]);
+isLoading = signal<boolean>(false);
 
-// Helper Methods untuk Styling Dinamis
-getAccentClass(name: string): string {
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes('platinum')) return 'accent-platinum';
-    if (lowerName.includes('gold')) return 'accent-gold';
-    if (lowerName.includes('silver')) return 'accent-silver';
-    if (lowerName.includes('bronze')) return 'accent-bronze';
-    return 'accent-default';
-}
+// Modal State
+isAddModalOpen = signal(false);
+isSubmitting = signal(false);
 
-getIconClass(name: string): string {
-    // Logic similar to accent class for icon selection
-    // ...
+// Message State
+successMessage = signal<string | null>(null);
+errorMessage = signal<string | null>(null);
+
+// Form Data
+addPlafondForm = signal<PlafondRequest>({
+  name: '',
+  description: '',
+  maxAmount: 0,
+  interestRate: 0,
+  tenorMin: 0,
+  tenorMax: 0
+});
+
+// Validation Errors (per field)
+validationErrors = signal<Record<string, string>>({});
+```
+
+### B. Load Data
+
+```typescript
+loadPlafonds(): void {
+  this.isLoading.set(true);
+  this.plafondService.getAllPlafonds().subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.plafonds.set(response.data);
+      }
+      this.isLoading.set(false);
+    },
+    error: (err) => {
+      console.error('Error loading plafonds:', err);
+      this.isLoading.set(false);
+    }
+  });
 }
 ```
 
-File: `src/app/features/plafonds/plafond-list.component.html`
-Template menggunakan Grid CSS untuk layout responsif tanpa kontrol paginasi visual (clean view).
+### C. Create Plafond
 
-- **Edit Button**: Ditambahkan pada Header Card.
-- **Reusable Modal**: Title dan Button text berubah dinamis ("Add" vs "Edit"/"Update").
+```typescript
+submitAddPlafond(): void {
+  this.isSubmitting.set(true);
+  this.errorMessage.set(null);
+  this.validationErrors.set({});
+
+  this.plafondService.createPlafond(this.addPlafondForm()).subscribe({
+    next: (response) => {
+      if (response.success) {
+        this.loadPlafonds(); // Refresh data
+        this.closeAddModal();
+        this.successMessage.set(response.message || 'Plafond created successfully!');
+        setTimeout(() => this.successMessage.set(null), 3000);
+      }
+      this.isSubmitting.set(false);
+    },
+    error: (err) => {
+      // Handle validation errors
+      if (err.error?.data?.errors) {
+        this.validationErrors.set(err.error.data.errors);
+        this.errorMessage.set(err.error.message || 'Validation failed');
+      } else {
+        this.errorMessage.set('An error occurred');
+      }
+      this.isSubmitting.set(false);
+    }
+  });
+}
+```
+
+---
+
+## 3. UI Template - Card Grid Layout
+
+File: `plafond-list.component.html`
+
+### A. Card Grid Container
+
+Plafond ditampilkan dalam bentuk **card grid** yang responsif, bukan tabel.
 
 ```html
-<!-- Tombol Edit pada Card -->
-<div class="card-header-corp">
-  ...
-  <button class="btn-icon-small edit" (click)="openEditModal(plafond)">
-    <span class="material-icons-outlined">edit</span>
-  </button>
-</div>
-
-<!-- Dynamic Modal Header -->
-<h3>{{ editingPlafondId() ? 'Edit Plafond' : 'Add New Plafond' }}</h3>
-
-<!-- Grid Container -->
-<div class="plafond-grid-container">
-  <div class="plafond-grid">
-    @for (plafond of filteredPlafonds(); track plafond.id) {
+<div class="plafond-grid">
+  @for (plafond of filteredPlafonds(); track plafond.id) {
     <div class="plafond-card-corporate">
-      <!-- Accent Line -->
+      <!-- Top Accent Line (Color coded by type) -->
       <div class="card-accent" [ngClass]="getAccentClass(plafond.name)"></div>
 
       <div class="card-main">
-        <!-- Header with Icon & Title -->
+        <!-- Header dengan Icon -->
         <div class="card-header-corp">
           <div class="header-icon-wrapper" [ngClass]="getIconClass(plafond.name)">
             <span class="material-icons-outlined">workspace_premium</span>
@@ -135,46 +188,227 @@ Template menggunakan Grid CSS untuk layout responsif tanpa kontrol paginasi visu
             <h3 class="corp-title">{{ plafond.name }}</h3>
             <span class="corp-subtitle">{{ plafond.description }}</span>
           </div>
+          <button class="btn-icon-small delete" (click)="deletePlafond(plafond.id, plafond.name)">
+            <span class="material-icons-outlined">delete</span>
+          </button>
         </div>
 
-        <!-- Metrics Box (Limit & Interest) -->
+        <!-- Key Metrics Row -->
         <div class="metrics-container">
-          <div class="metric-box">
+          <div class="metric-box primary-metric">
             <label>Maximum Limit</label>
             <div class="value">{{ plafond.maxAmount | currency:'IDR':'IDR ':'1.0-0' }}</div>
           </div>
           <div class="metric-divider"></div>
-          <div class="metric-box">
+          <div class="metric-box secondary-metric">
             <label>Interest Rate</label>
             <div class="value text-highlight">{{ plafond.interestRate }}%</div>
           </div>
         </div>
+
+        <!-- Footer / Details -->
+        <div class="card-footer-corp">
+          <div class="detail-item">
+            <span class="material-icons-outlined">date_range</span>
+            <span>Tenor: <strong>{{ plafond.tenorMin }} - {{ plafond.tenorMax }} Months</strong></span>
+          </div>
+        </div>
       </div>
     </div>
-    }
-  </div>
+  }
 </div>
 ```
 
-File: `src/app/features/plafonds/plafond-list.component.css`
-Menambahkan styling khusus untuk kartu "Corporate" dengan shadow halus dan transisi.
+### B. Color Coding Logic
+
+Setiap tier plafond memiliki warna accent yang berbeda:
+
+```typescript
+getAccentClass(name: string): string {
+  const lowerName = name.toLowerCase();
+  if (lowerName.includes('platinum')) return 'accent-platinum';
+  if (lowerName.includes('gold')) return 'accent-gold';
+  if (lowerName.includes('silver')) return 'accent-silver';
+  if (lowerName.includes('bronze')) return 'accent-bronze';
+  return 'accent-default';
+}
+```
+
+---
+
+## 4. Modal Form - Create Plafond
+
+### A. Form Grid Layout (2 Kolom)
+
+Modal menggunakan **form-grid** untuk menampilkan field dalam 2 kolom yang lebih efisien.
+
+```html
+@if (isAddModalOpen()) {
+<div class="modal-overlay">
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3>Add New Plafond</h3>
+      <button class="btn-close" (click)="closeAddModal()">
+        <span class="material-icons-outlined">close</span>
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <!-- Error Alert -->
+      @if (errorMessage()) {
+        <div class="error-alert">
+          <span class="material-icons-outlined">error</span>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <!-- Full Width Fields -->
+      <div class="form-group">
+        <label>Plafond Name <span class="required">*</span></label>
+        <input type="text" [(ngModel)]="addPlafondForm().name" 
+               [class.error]="validationErrors()['name']">
+        @if (validationErrors()['name']) {
+          <span class="error-text">{{ validationErrors()['name'] }}</span>
+        }
+      </div>
+
+      <div class="form-group">
+        <label>Description <span class="required">*</span></label>
+        <textarea [(ngModel)]="addPlafondForm().description" rows="3"
+                  [class.error]="validationErrors()['description']"></textarea>
+        @if (validationErrors()['description']) {
+          <span class="error-text">{{ validationErrors()['description'] }}</span>
+        }
+      </div>
+
+      <!-- 2 Column Grid -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Max Amount (IDR) <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="addPlafondForm().maxAmount"
+                 [class.error]="validationErrors()['maxAmount']">
+          @if (validationErrors()['maxAmount']) {
+            <span class="error-text">{{ validationErrors()['maxAmount'] }}</span>
+          }
+        </div>
+
+        <div class="form-group">
+          <label>Interest Rate (%) <span class="required">*</span></label>
+          <input type="number" step="0.1" [(ngModel)]="addPlafondForm().interestRate"
+                 [class.error]="validationErrors()['interestRate']">
+          @if (validationErrors()['interestRate']) {
+            <span class="error-text">{{ validationErrors()['interestRate'] }}</span>
+          }
+        </div>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Min Tenor (Months) <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="addPlafondForm().tenorMin"
+                 [class.error]="validationErrors()['tenorMin']">
+        </div>
+
+        <div class="form-group">
+          <label>Max Tenor (Months) <span class="required">*</span></label>
+          <input type="number" [(ngModel)]="addPlafondForm().tenorMax"
+                 [class.error]="validationErrors()['tenorMax']">
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="modal-actions">
+        <button class="btn-secondary" (click)="closeAddModal()">Cancel</button>
+        <button class="btn-primary" (click)="submitAddPlafond()" [disabled]="isSubmitting()">
+          @if (isSubmitting()) {
+            <span class="spinner-small"></span> Saving...
+          } @else {
+            Save Plafond
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+}
+```
+
+---
+
+## 5. Styling & UX (`plafond-list.component.css`)
+
+### A. Modal Styling (Konsisten dengan User & Branch)
 
 ```css
-/* Corporate Card Styles */
+/* Modal Container - Wider untuk 2-col layout */
+.modal-container {
+  background: white;
+  width: 90%;
+  max-width: 500px; /* Wider untuk form-grid */
+  border-radius: 16px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  animation: slideUp 0.3s ease-out;
+}
+
+/* Scrollable Modal Body */
+.modal-body {
+  padding: 24px;
+  max-height: 80vh; /* Prevent terlalu tinggi */
+  overflow-y: auto; /* Scroll jika konten panjang */
+}
+
+/* Form Grid - 2 Kolom */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Error Styling - Hanya Border Merah */
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #ef4444; /* Hanya border merah */
+}
+```
+
+### B. Card Grid Layout
+
+```css
+.plafond-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+}
+
 .plafond-card-corporate {
   background: white;
   border-radius: 12px;
   border: 1px solid #e2e8f0;
+  overflow: hidden;
+  transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
-  /* ... transition ... */
 }
 
 .plafond-card-corporate:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.1);
 }
+```
 
-/* Color Themes (Accent & Icons) */
+### C. Color Themes
+
+```css
+/* Platinum */
+.accent-platinum {
+  background: linear-gradient(90deg, #e0f2fe, #38bdf8);
+}
+.icon-platinum {
+  background: #f0f9ff;
+  color: #0284c7;
+}
+
+/* Gold */
 .accent-gold {
   background: linear-gradient(90deg, #fef3c7, #fbbf24);
 }
@@ -183,88 +417,27 @@ Menambahkan styling khusus untuk kartu "Corporate" dengan shadow halus dan trans
   color: #d97706;
 }
 
-/* ... Silver, Bronze, Platinum themes ... */
-```
-
-### D. Implementasi Delete Plafond
-
-Kita menambahkan fitur hapus plafond (`DELETE /api/plafonds/{id}`) menggunakan konfirmasi sederhana `window.confirm`.
-
-**1. Service Helper (`plafond.service.ts`):**
-
-```typescript
-deletePlafond(id: number): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+/* Silver */
+.accent-silver {
+  background: linear-gradient(90deg, #f1f5f9, #94a3b8);
+}
+.icon-silver {
+  background: #f8fafc;
+  color: #475569;
 }
 ```
 
-**2. Component Logic (`plafond-list.component.ts`):**
+---
 
-```typescript
-deletePlafond(id: number, name: string): void {
-  // Simple & Fast Confirmation
-  if (confirm(`Are you sure you want to delete plafond "${name}"? This action cannot be undone.`)) {
-    this.isLoading.set(true);
-    this.plafondService.deletePlafond(id).subscribe({
-      next: (response) => {
-        this.successMessage.set(response.message || 'Plafond berhasil dihapus');
-        setTimeout(() => this.successMessage.set(null), 3000);
-        this.loadPlafonds();
-      },
-      error: (error) => {
-        this.errorMessage.set(error.error?.message || 'Gagal menghapus plafond');
-        setTimeout(() => this.errorMessage.set(''), 5000);
-        this.isLoading.set(false);
-      }
-    });
-  }
-}
-```
+## Kesimpulan
 
-**3. UI Button (`plafond-list.component.html`):**
+Fitur Plafond Management menggunakan:
+- **Card Grid Layout** untuk tampilan yang lebih menarik daripada tabel
+- **Form Grid (2 kolom)** untuk efisiensi ruang di modal
+- **Color Coding** untuk membedakan tier plafond secara visual
+- **Konsistensi Desain** dengan modal User dan Branch (max-width 500px, scrollable, error styling yang sama)
+- **Angular Signals** untuk state management yang reaktif dan performa tinggi
 
-```html
-<button
-  class="btn-icon-small delete"
-  (click)="deletePlafond(plafond.id, plafond.name)"
-  title="Delete"
->
-  <span class="material-icons-outlined">delete</span>
-</button>
-```
+---
 
-### E. Konfigurasi Routing
-
-File: `src/app/app.routes.ts`
-Menambahkan rute baru di bawah layout admin agar bisa diakses melalui URL `/admin/plafond`.
-
-```typescript
-{ path: 'plafond', component: PlafondListComponent },
-```
-
-### E. Integrasi Sidebar
-
-File: `src/app/layout/admin/sidebar/sidebar.component.ts`
-Menu sudah dikonfigurasi sebelumnya dengan permission `PLAFOND:READ`.
-
-```typescript
-{
-    label: 'Plafond',
-    path: '/admin/plafond',
-    icon: 'monetization_on',
-    permissions: ['PLAFOND:READ']
-}
-```
-
-## 3. Hasil Akhir
-
-Sekarang pengguna dengan role/permission yang sesuai (Superadmin atau User dengan `PLAFOND:READ`) dapat:
-
-1. Login ke aplikasi.
-2. Melihat menu "Plafond" di sidebar.
-3. Mengklik menu tersebut dan melihat daftar produk pinjaman (Plafond) dalam bentuk kartu yang informatif.
-
-## Catatan
-
-- Pastikan backend (`loanova`) berjalan di port default (biasanya 8080 atau 9091 sesuai konfigurasi).
-- Proxy `proxy.conf.json` di frontend harus mengarah ke port backend yang benar.
+_Dokumentasi ini dibuat sebagai referensi implementasi fitur Plafond Management._

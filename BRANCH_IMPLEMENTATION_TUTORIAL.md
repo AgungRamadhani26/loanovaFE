@@ -302,22 +302,37 @@ Kita menggunakan dua blok `@if` terpisah untuk modal Add dan Edit agar template 
 
 ### C. Styling & UX Refinement (`branch-list.component.css`)
 
-Peningkatan desain dilakukan untuk pengalaman pengguna yang lebih baik:
+Peningkatan desain dilakukan untuk pengalaman pengguna yang lebih baik dan konsistensi dengan modal lain (User, Plafond):
 
-1.  **Compact Modal**: Ukuran modal dibatasi `max-width: 400px` agar fokus dan tidak terlalu lebar.
-2.  **Modern Look**: Menggunakan `border-radius: 16px` dan shadow yang halus (`box-shadow`).
-3.  **Animasi**:
+1.  **Wider Modal**: Ukuran modal diperlebar menjadi `max-width: 500px` untuk mengakomodasi layout 2 kolom.
+2.  **Form Grid Layout**: Menggunakan `.form-grid` class untuk menampilkan field dalam 2 kolom yang lebih efisien.
+3.  **Scrollable Modal Body**: Modal body memiliki `max-height: 80vh` dan `overflow-y: auto` agar tidak terlalu tinggi di layar kecil.
+4.  **Modern Look**: Menggunakan `border-radius: 16px` dan shadow yang halus (`box-shadow`).
+5.  **Animasi**:
     - `fadeIn` untuk overlay background.
     - `slideUp` + `scale` effect untuk konten modal agar terkesan "pop".
-4.  **Toast Notification**: Melayang di kanan atas (`fixed`, `top: 24px`, `right: 24px`) dengan animasi masuk dari kanan.
+6.  **Toast Notification**: Melayang di kanan atas (`fixed`, `top: 24px`, `right: 24px`) dengan animasi masuk dari kanan.
 
 ```css
 /* Styling Kunci */
 .modal-container {
   width: 90%;
-  max-width: 400px; /* Ukuran compact */
+  max-width: 500px; /* Wider untuk 2-col layout */
   border-radius: 16px; /* Sudut membulat modern */
   animation: slideUp 0.3s ease-out;
+}
+
+.modal-body {
+  padding: 24px;
+  max-height: 80vh; /* Prevent modal terlalu tinggi */
+  overflow-y: auto; /* Scroll jika konten panjang */
+}
+
+/* Grid Layout untuk Form (2 kolom) */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .success-toast {
@@ -329,7 +344,19 @@ Peningkatan desain dilakukan untuk pengalaman pengguna yang lebih baik:
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
+
+/* Error Input Styling - Hanya Border Merah */
+.form-group input.error,
+.form-group textarea.error {
+  border-color: #ef4444; /* Hanya border merah, tanpa background */
+}
 ```
+
+**Catatan Penting:**
+- Desain modal ini konsisten dengan modal User Management dan Plafond Management.
+- Error styling hanya mengubah border menjadi merah, tidak mengubah background input.
+- Form grid memungkinkan field yang lebih pendek (seperti kode cabang) ditampilkan berdampingan.
+
 
 ---
 
