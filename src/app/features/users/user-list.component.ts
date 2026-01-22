@@ -2,7 +2,9 @@ import { Component, OnInit, signal, computed, inject, PLATFORM_ID } from '@angul
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../../core/services/user.service';
+import { BranchService } from '../../core/services/branch.service';
 import { UserData } from '../../core/models/response/user-response.model';
+import { BranchData } from '../../core/models/response/branch-response.model';
 
 @Component({
     selector: 'app-user-list',
@@ -12,8 +14,9 @@ import { UserData } from '../../core/models/response/user-response.model';
     styleUrl: './user-list.component.css'
 })
 export class UserListComponent implements OnInit {
-    private userService = inject(UserService);
-    private platformId = inject(PLATFORM_ID);
+    private readonly userService = inject(UserService);
+    private readonly branchService = inject(BranchService);
+    private readonly platformId = inject(PLATFORM_ID);
 
     // Ekspos Math ke template
     protected readonly Math = Math;
@@ -22,6 +25,7 @@ export class UserListComponent implements OnInit {
      * STATE MANAGEMENT (ANGULAR SIGNALS)
      */
     users = signal<UserData[]>([]);
+    branches = signal<BranchData[]>([]);
     isLoading = signal<boolean>(false);
     searchQuery = signal<string>('');
 
@@ -43,18 +47,17 @@ export class UserListComponent implements OnInit {
      * COMPUTED PROPERTIES (REACTIVE)
      */
 
-    // 1. Daftar Cabang yang Unik (untuk dropdown filter)
+    // 1. Daftar Cabang dari API (untuk dropdown filter)
     availableBranches = computed(() => {
-        const branches = this.users()
-            .map(u => u.branchCode)
-            .filter((b): b is string => !!b);
-        return ['ALL', ...new Set(branches)].sort();
+        // Ambil dari signal branches yang sudah di-load dari API
+        const branchCodes = this.branches().map(b => b.branchCode);
+        return ['ALL', ...branchCodes].sort((a, b) => a.localeCompare(b));
     });
 
     // 2. Daftar Role yang Unik (untuk dropdown filter)
     availableRoles = computed(() => {
         const roles = this.users().flatMap(u => u.roles);
-        return ['ALL', ...new Set(roles)].sort();
+        return ['ALL', ...new Set(roles)].sort((a, b) => a.localeCompare(b));
     });
 
     // 3. Proses Filtering Utama (Combine Search + Dropdown Filters)
@@ -131,12 +134,24 @@ export class UserListComponent implements OnInit {
     ngOnInit(): void {
         if (isPlatformBrowser(this.platformId)) {
             this.loadUsers();
+            this.loadBranches();
         }
     }
 
     /**
      * API CALLS
      */
+    loadBranches(): void {
+        this.branchService.getAllBranches().subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.branches.set(response.data);
+                }
+            },
+            error: (err) => console.error('Error fetching branches:', err)
+        });
+    }
+
     loadUsers(): void {
         this.isLoading.set(true);
         this.userService.getAllUsers().subscribe({
