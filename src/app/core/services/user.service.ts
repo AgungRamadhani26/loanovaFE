@@ -42,4 +42,12 @@ export class UserService {
     updateUser(id: number, request: UserUpdateRequest): Observable<ApiResponse<UserData>> {
         return this.http.put<ApiResponse<UserData>>(`${this.API_URL}/${id}`, request);
     }
+
+    /**
+     * Menghapus pengguna (soft delete)
+     * Endpoint: DELETE /api/users/{id}
+     */
+    deleteUser(id: number): Observable<ApiResponse<void>> {
+        return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+    }
 }

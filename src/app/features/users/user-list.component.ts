@@ -41,7 +41,8 @@ export class UserListComponent implements OnInit {
     isCreateModalOpen = signal<boolean>(false);
     isSubmitting = signal<boolean>(false);
     successMessage = signal<string>('');
-    formError = signal<string | null>(null); // Error utama untuk alert box
+    errorMessage = signal<string>(''); // Error toast untuk delete/list operations
+    formError = signal<string | null>(null); // Error utama untuk modal form
     fieldErrors = signal<Record<string, string>>({});
     createUserForm = signal<{
         username: string;
@@ -544,5 +545,33 @@ export class UserListComponent implements OnInit {
             this.fieldErrors.set({});
         }
         this.isSubmitting.set(false);
+    }
+
+    /**
+     * DELETE USER HANDLER
+     * Menghapus user dengan konfirmasi dialog terlebih dahulu
+     */
+    deleteUser(user: UserData): void {
+        const confirmMessage = `Apakah Anda yakin ingin menghapus user "${user.username}"?\n\nUser akan dinonaktifkan dan tidak dapat login lagi.`;
+
+        if (confirm(confirmMessage)) {
+            this.isLoading.set(true);
+            this.userService.deleteUser(user.id).subscribe({
+                next: (response) => {
+                    this.successMessage.set(response.message || 'User berhasil dihapus!');
+                    setTimeout(() => this.successMessage.set(''), 4000);
+                    this.loadUsers();
+                },
+                error: (err) => {
+                    const message = err.error?.message || 'Gagal menghapus user';
+                    this.errorMessage.set(message);
+                    setTimeout(() => this.errorMessage.set(''), 5000);
+                    this.isLoading.set(false);
+                },
+                complete: () => {
+                    this.isLoading.set(false);
+                }
+            });
+        }
     }
 }

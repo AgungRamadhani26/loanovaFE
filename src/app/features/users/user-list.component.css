@@ -680,6 +680,24 @@
     }
 }
 
+/* Error Toast */
+.error-toast {
+    position: fixed;
+    top: 24px;
+    right: 24px;
+    background: #ef4444;
+    color: white;
+    padding: 16px 24px;
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+    animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 /* Error Alert */
 .error-alert {
     background: #fee2e2;

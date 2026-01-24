@@ -7,6 +7,14 @@
     </div>
     }
 
+    <!-- ERROR TOAST -->
+    @if (errorMessage()) {
+    <div class="error-toast">
+        <span class="material-icons-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+    </div>
+    }
+
     <!-- HEADER SECTION -->
     <div class="header-section">
         <div class="title-wrapper">
@@ -189,7 +197,7 @@
                                 <button class="btn-icon-sm" title="Edit User" (click)="openEditModal(user)">
                                     <span class="material-icons-outlined">edit</span>
                                 </button>
-                                <button class="btn-icon-sm text-red-500" title="Delete User">
+                                <button class="btn-icon-sm text-red-500" title="Delete User" (click)="deleteUser(user)">
                                     <span class="material-icons-outlined">delete</span>
                                 </button>
                             </div>

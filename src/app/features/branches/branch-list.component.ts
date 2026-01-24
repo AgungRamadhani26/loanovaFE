@@ -247,7 +247,7 @@ export class BranchListComponent implements OnInit {
                     this.isLoading.set(false);
                 },
                 complete: () => {
-                   this.isLoading.set(false);
+                    this.isLoading.set(false);
                 }
             });
         }
@@ -326,10 +326,10 @@ export class BranchListComponent implements OnInit {
             this.formError.set(apiError.message);
 
             if (apiError.data && apiError.data.errors) {
-                 this.fieldErrors.set(apiError.data.errors);
+                this.fieldErrors.set(apiError.data.errors);
             }
         } else {
-             this.formError.set('Terjadi kesalahan koneksi.');
+            this.formError.set('Terjadi kesalahan koneksi.');
         }
         this.isSubmitting.set(false);
     }

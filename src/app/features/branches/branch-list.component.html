@@ -1,9 +1,17 @@
 <div class="branch-management-container">
     @if (successMessage()) {
-        <div class="success-toast">
-            <span class="material-icons-outlined">check_circle</span>
-            <span>{{ successMessage() }}</span>
-        </div>
+    <div class="success-toast">
+        <span class="material-icons-outlined">check_circle</span>
+        <span>{{ successMessage() }}</span>
+    </div>
+    }
+
+    <!-- ERROR TOAST -->
+    @if (error()) {
+    <div class="error-toast">
+        <span class="material-icons-outlined">error</span>
+        <span>{{ error() }}</span>
+    </div>
     }
 
     <!-- HEADER SECTION -->
@@ -33,8 +41,8 @@
         <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
             <div class="search-box">
                 <span class="material-icons-outlined">search</span>
-                <input type="text" placeholder="Search by branch code, name, or address..."
-                    [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
+                <input type="text" placeholder="Search by branch code, name, or address..." [ngModel]="searchQuery()"
+                    (ngModelChange)="onSearch($event)">
             </div>
             <div class="filter-actions">
                 <button class="btn-primary" (click)="openAddModal()">
@@ -98,12 +106,11 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <button class="btn-action btn-edit" (click)="openEditModal(branch)"
-                                    title="Edit Branch">
+                                <button class="btn-action btn-edit" (click)="openEditModal(branch)" title="Edit Branch">
                                     <span class="material-icons-outlined">edit</span>
                                 </button>
-                                <button class="btn-action btn-delete" (click)="deleteBranch(branch.id, branch.branchName)"
-                                    title="Delete Branch">
+                                <button class="btn-action btn-delete"
+                                    (click)="deleteBranch(branch.id, branch.branchName)" title="Delete Branch">
                                     <span class="material-icons-outlined">delete</span>
                                 </button>
                             </div>
@@ -159,37 +166,37 @@
 
         <div class="modal-body">
             @if (formError()) {
-                <div class="error-alert">
-                    <span class="material-icons-outlined">error</span>
-                    <span>{{ formError() }}</span>
-                </div>
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ formError() }}</span>
+            </div>
             }
 
             <form (ngSubmit)="submitAddBranch()">
                 <div class="form-group">
                     <label>Branch Code <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="addBranchForm.branchCode" name="branchCode"
-                           placeholder="Ex: JKT01" [class.error]="getFieldError('branchCode')">
+                    <input type="text" [(ngModel)]="addBranchForm.branchCode" name="branchCode" placeholder="Ex: JKT01"
+                        [class.error]="getFieldError('branchCode')">
                     @if (getFieldError('branchCode')) {
-                        <span class="error-text">{{ getFieldError('branchCode') }}</span>
+                    <span class="error-text">{{ getFieldError('branchCode') }}</span>
                     }
                 </div>
 
                 <div class="form-group">
                     <label>Branch Name <span class="required">*</span></label>
                     <input type="text" [(ngModel)]="addBranchForm.branchName" name="branchName"
-                           placeholder="Ex: Jakarta Pusat" [class.error]="getFieldError('branchName')">
+                        placeholder="Ex: Jakarta Pusat" [class.error]="getFieldError('branchName')">
                     @if (getFieldError('branchName')) {
-                        <span class="error-text">{{ getFieldError('branchName') }}</span>
+                    <span class="error-text">{{ getFieldError('branchName') }}</span>
                     }
                 </div>
 
                 <div class="form-group">
                     <label>Address <span class="required">*</span></label>
-                    <textarea [(ngModel)]="addBranchForm.address" name="address" rows="3"
-                              placeholder="Full address..." [class.error]="getFieldError('address')"></textarea>
+                    <textarea [(ngModel)]="addBranchForm.address" name="address" rows="3" placeholder="Full address..."
+                        [class.error]="getFieldError('address')"></textarea>
                     @if (getFieldError('address')) {
-                        <span class="error-text">{{ getFieldError('address') }}</span>
+                    <span class="error-text">{{ getFieldError('address') }}</span>
                     }
                 </div>
 
@@ -197,9 +204,9 @@
                     <button type="button" class="btn-secondary" (click)="closeAddModal()">Cancel</button>
                     <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
                         @if (isSubmitting()) {
-                            <span class="spinner-small"></span> Saving...
+                        <span class="spinner-small"></span> Saving...
                         } @else {
-                            Save Branch
+                        Save Branch
                         }
                     </button>
                 </div>
@@ -222,37 +229,37 @@
 
         <div class="modal-body">
             @if (formError()) {
-                <div class="error-alert">
-                    <span class="material-icons-outlined">error</span>
-                    <span>{{ formError() }}</span>
-                </div>
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ formError() }}</span>
+            </div>
             }
 
             <form (ngSubmit)="submitEditBranch()">
                 <div class="form-group">
                     <label>Branch Code <span class="required">*</span></label>
-                    <input type="text" [(ngModel)]="editBranchForm.branchCode" name="branchCode"
-                           placeholder="Ex: JKT01" [class.error]="getFieldError('branchCode')">
+                    <input type="text" [(ngModel)]="editBranchForm.branchCode" name="branchCode" placeholder="Ex: JKT01"
+                        [class.error]="getFieldError('branchCode')">
                     @if (getFieldError('branchCode')) {
-                        <span class="error-text">{{ getFieldError('branchCode') }}</span>
+                    <span class="error-text">{{ getFieldError('branchCode') }}</span>
                     }
                 </div>
 
                 <div class="form-group">
                     <label>Branch Name <span class="required">*</span></label>
                     <input type="text" [(ngModel)]="editBranchForm.branchName" name="branchName"
-                           placeholder="Ex: Jakarta Pusat" [class.error]="getFieldError('branchName')">
+                        placeholder="Ex: Jakarta Pusat" [class.error]="getFieldError('branchName')">
                     @if (getFieldError('branchName')) {
-                        <span class="error-text">{{ getFieldError('branchName') }}</span>
+                    <span class="error-text">{{ getFieldError('branchName') }}</span>
                     }
                 </div>
 
                 <div class="form-group">
                     <label>Address <span class="required">*</span></label>
-                    <textarea [(ngModel)]="editBranchForm.address" name="address" rows="3"
-                              placeholder="Full address..." [class.error]="getFieldError('address')"></textarea>
+                    <textarea [(ngModel)]="editBranchForm.address" name="address" rows="3" placeholder="Full address..."
+                        [class.error]="getFieldError('address')"></textarea>
                     @if (getFieldError('address')) {
-                        <span class="error-text">{{ getFieldError('address') }}</span>
+                    <span class="error-text">{{ getFieldError('address') }}</span>
                     }
                 </div>
 
@@ -260,9 +267,9 @@
                     <button type="button" class="btn-secondary" (click)="closeEditModal()">Cancel</button>
                     <button type="submit" class="btn-primary" [disabled]="isSubmitting()">
                         @if (isSubmitting()) {
-                            <span class="spinner-small"></span> Updating...
+                        <span class="spinner-small"></span> Updating...
                         } @else {
-                            Update Branch
+                        Update Branch
                         }
                     </button>
                 </div>
@@ -271,5 +278,3 @@
     </div>
 </div>
 }
-
-
