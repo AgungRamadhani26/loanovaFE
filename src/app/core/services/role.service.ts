@@ -40,4 +40,12 @@ export class RoleService {
     updateRole(id: number, request: RoleUpdateRequest): Observable<ApiResponse<RoleData>> {
         return this.http.put<ApiResponse<RoleData>>(`${this.API_URL}/${id}`, request);
     }
+
+    /**
+     * Menghapus role
+     * Endpoint: DELETE /api/roles/{id}
+     */
+    deleteRole(id: number): Observable<ApiResponse<void>> {
+        return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
+    }
 }

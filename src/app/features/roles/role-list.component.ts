@@ -331,7 +331,29 @@ export class RoleListComponent implements OnInit {
         });
     }
 
+    /**
+     * DELETE ROLE
+     */
     deleteRole(role: RoleData): void {
-        console.log('Delete role (belum diimplementasi):', role);
+        const confirmed = confirm(`Apakah Anda yakin ingin menghapus role "${role.roleName}"?`);
+        if (!confirmed) return;
+
+        this.roleService.deleteRole(role.id).subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.loadRoles();
+                    this.successMessage.set(response.message || 'Role berhasil dihapus!');
+                    setTimeout(() => this.successMessage.set(null), 4000);
+                } else {
+                    this.errorMessage.set(response.message || 'Gagal menghapus role');
+                    setTimeout(() => this.errorMessage.set(''), 5000);
+                }
+            },
+            error: (err) => {
+                const message = err.error?.message || 'Terjadi kesalahan saat menghapus role';
+                this.errorMessage.set(message);
+                setTimeout(() => this.errorMessage.set(''), 5000);
+            }
+        });
     }
 }
