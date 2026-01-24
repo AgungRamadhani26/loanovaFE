@@ -8,6 +8,7 @@ import { UserData } from '../../core/models/response/user-response.model';
 import { BranchData } from '../../core/models/response/branch-response.model';
 import { RoleData } from '../../core/models/response/role-response.model';
 import { UserRequest } from '../../core/models/request/user-request.model';
+import { UserUpdateRequest } from '../../core/models/request/user-update-request.model';
 
 @Component({
     selector: 'app-user-list',
@@ -56,15 +57,44 @@ export class UserListComponent implements OnInit {
         branchId: null
     });
 
+    /**
+     * EDIT USER MODAL STATE
+     */
+    isEditModalOpen = signal<boolean>(false);
+    editingUserId = signal<number | null>(null);
+    editUserForm = signal<{
+        username: string;
+        email: string;
+        isActive: boolean;
+        roleIds: number[];
+        branchId: number | null;
+    }>({
+        username: '',
+        email: '',
+        isActive: true,
+        roleIds: [],
+        branchId: null
+    });
+
     // Roles yang bisa multi-select
     private readonly MULTI_SELECT_ROLES = ['SUPERADMIN', 'BACKOFFICE'];
 
     // Roles yang membutuhkan branch assignment
     private readonly ROLES_REQUIRING_BRANCH = ['BRANCHMANAGER', 'MARKETING'];
 
-    // Computed: Cek apakah role yang dipilih membutuhkan branch
+    // Computed: Cek apakah role yang dipilih membutuhkan branch (CREATE)
     needsBranch = computed(() => {
         const selectedRoleIds = this.createUserForm().roleIds;
+        const allRoles = this.roles();
+        const selectedRoleNames = allRoles
+            .filter(r => selectedRoleIds.includes(r.id))
+            .map(r => r.roleName);
+        return selectedRoleNames.some(name => this.ROLES_REQUIRING_BRANCH.includes(name));
+    });
+
+    // Computed: Cek apakah role yang dipilih membutuhkan branch (EDIT)
+    needsBranchForEdit = computed(() => {
+        const selectedRoleIds = this.editUserForm().roleIds;
         const allRoles = this.roles();
         const selectedRoleNames = allRoles
             .filter(r => selectedRoleIds.includes(r.id))
@@ -369,7 +399,7 @@ export class UserListComponent implements OnInit {
         const request: UserRequest = {
             username: form.username,
             email: form.email,
-            password: form.password, // Gunakan password dari form, bukan username
+            password: form.password,
             branchId: this.needsBranch() ? form.branchId : null,
             isActive: true,
             roleIds: form.roleIds
@@ -386,17 +416,133 @@ export class UserListComponent implements OnInit {
                 }
                 this.isSubmitting.set(false);
             },
-            error: (err) => {
-                const errorResponse = err.error;
-                if (errorResponse?.data?.errors) {
-                    this.formError.set(errorResponse.message || 'Validasi gagal');
-                    this.fieldErrors.set(errorResponse.data.errors);
+            error: (err) => this.handleFormError(err)
+        });
+    }
+
+    /**
+     * EDIT USER MODAL HANDLERS
+     */
+    openEditModal(user: UserData): void {
+        // Cari branchId berdasarkan branchCode
+        const branch = this.branches().find(b => b.branchCode === user.branchCode);
+
+        // Cari roleIds berdasarkan role names
+        const roleIds = this.roles()
+            .filter(r => user.roles.includes(r.roleName))
+            .map(r => r.id);
+
+        this.editUserForm.set({
+            username: user.username,
+            email: user.email,
+            isActive: user.isActive,
+            roleIds: roleIds,
+            branchId: branch?.id ?? null
+        });
+        this.editingUserId.set(user.id);
+
+        // Reset error state
+        this.formError.set(null);
+        this.fieldErrors.set({});
+
+        this.isEditModalOpen.set(true);
+    }
+
+    closeEditModal(): void {
+        this.isEditModalOpen.set(false);
+        this.editingUserId.set(null);
+        this.formError.set(null);
+        this.fieldErrors.set({});
+    }
+
+    toggleEditRoleSelection(roleId: number): void {
+        const clickedRole = this.roles().find(r => r.id === roleId);
+        if (!clickedRole) return;
+
+        const isMultiSelectRole = this.MULTI_SELECT_ROLES.includes(clickedRole.roleName);
+
+        this.editUserForm.update(form => {
+            let newRoles: number[];
+
+            if (isMultiSelectRole) {
+                const currentMultiSelectRoles = form.roleIds.filter(id => {
+                    const role = this.roles().find(r => r.id === id);
+                    return role && this.MULTI_SELECT_ROLES.includes(role.roleName);
+                });
+
+                if (currentMultiSelectRoles.includes(roleId)) {
+                    newRoles = currentMultiSelectRoles.filter(id => id !== roleId);
                 } else {
-                    this.formError.set(errorResponse?.message || 'Terjadi kesalahan saat membuat user');
-                    this.fieldErrors.set({});
+                    newRoles = [...currentMultiSelectRoles, roleId];
+                }
+            } else {
+                newRoles = form.roleIds.includes(roleId) ? [] : [roleId];
+            }
+
+            const selectedRoleNames = this.roles()
+                .filter(r => newRoles.includes(r.id))
+                .map(r => r.roleName);
+            const stillNeedsBranch = selectedRoleNames.some(name =>
+                this.ROLES_REQUIRING_BRANCH.includes(name)
+            );
+
+            return {
+                ...form,
+                roleIds: newRoles,
+                branchId: stillNeedsBranch ? form.branchId : null
+            };
+        });
+    }
+
+    isEditRoleSelected(roleId: number): boolean {
+        return this.editUserForm().roleIds.includes(roleId);
+    }
+
+    submitEditUser(): void {
+        const id = this.editingUserId();
+        if (!id) return;
+
+        const form = this.editUserForm();
+        this.formError.set(null);
+        this.fieldErrors.set({});
+        this.isSubmitting.set(true);
+
+        const request: UserUpdateRequest = {
+            username: form.username,
+            email: form.email,
+            branchId: this.needsBranchForEdit() ? form.branchId : null,
+            isActive: form.isActive,
+            roleIds: form.roleIds
+        };
+
+        this.userService.updateUser(id, request).subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.closeEditModal();
+                    this.loadUsers();
+                    this.successMessage.set(response.message || 'User berhasil diperbarui!');
+                    setTimeout(() => this.successMessage.set(''), 4000);
+                } else {
+                    this.formError.set(response.message || 'Gagal memperbarui user');
                 }
                 this.isSubmitting.set(false);
-            }
+            },
+            error: (err) => this.handleFormError(err)
         });
+    }
+
+    /**
+     * COMMON ERROR HANDLER
+     */
+    private handleFormError(err: any): void {
+        const errorResponse = err.error;
+        if (errorResponse?.data?.errors) {
+            this.formError.set(errorResponse.message || 'Validasi gagal');
+            this.fieldErrors.set(errorResponse.data.errors);
+        } else {
+            this.formError.set(errorResponse?.message || 'Terjadi kesalahan');
+            this.fieldErrors.set({});
+        }
+        this.isSubmitting.set(false);
     }
 }

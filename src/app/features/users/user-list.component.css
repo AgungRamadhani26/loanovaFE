@@ -1034,3 +1034,62 @@
         transform: rotate(360deg);
     }
 }
+
+/* Status Toggle for Edit Modal */
+.status-toggle {
+    display: flex;
+    gap: 12px;
+}
+
+.toggle-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #64748b;
+    background: #f8fafc;
+    flex: 1;
+    justify-content: center;
+}
+
+.toggle-option input[type="radio"] {
+    display: none;
+}
+
+.toggle-option:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.toggle-option.active {
+    border-color: #22c55e;
+    background: #f0fdf4;
+    color: #16a34a;
+}
+
+.toggle-option.active .material-icons-outlined {
+    color: #22c55e;
+}
+
+.toggle-option:not(.active).active {
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+/* When inactive is selected */
+.toggle-option:last-child.active {
+    border-color: #ef4444;
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.toggle-option:last-child.active .material-icons-outlined {
+    color: #ef4444;
+}

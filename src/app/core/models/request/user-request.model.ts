@@ -10,3 +10,4 @@ export interface UserRequest {
     isActive: boolean;
     roleIds: number[];
 }
+

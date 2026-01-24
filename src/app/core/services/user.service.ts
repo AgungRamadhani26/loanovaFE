@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/response/api-response.model';
 import { UserData } from '../models/response/user-response.model';
 import { UserRequest } from '../models/request/user-request.model';
+import { UserUpdateRequest } from '../models/request/user-update-request.model';
 
 /**
  * USER SERVICE
@@ -32,5 +33,13 @@ export class UserService {
      */
     createUser(request: UserRequest): Observable<ApiResponse<UserData>> {
         return this.http.post<ApiResponse<UserData>>(this.API_URL, request);
+    }
+
+    /**
+     * Memperbarui data pengguna
+     * Endpoint: PUT /api/users/{id}
+     */
+    updateUser(id: number, request: UserUpdateRequest): Observable<ApiResponse<UserData>> {
+        return this.http.put<ApiResponse<UserData>>(`${this.API_URL}/${id}`, request);
     }
 }
