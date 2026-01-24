@@ -1,0 +1,103 @@
+<div class="role-management-container">
+    <!-- SUCCESS TOAST -->
+    @if (successMessage()) {
+    <div class="success-toast">
+        <span class="material-icons-outlined">check_circle</span>
+        <span>{{ successMessage() }}</span>
+    </div>
+    }
+
+    <!-- ERROR TOAST -->
+    @if (errorMessage()) {
+    <div class="error-toast">
+        <span class="material-icons-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+    </div>
+    }
+
+    <!-- HEADER SECTION -->
+    <div class="header-section">
+        <div class="title-wrapper">
+            <h1 class="page-title">Role & Permission Management</h1>
+            <p class="page-subtitle">Manage application roles and their associated permissions.</p>
+        </div>
+        <div class="header-actions">
+            <button class="btn-icon" (click)="loadRoles()" title="Refresh">
+                <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-purple-100 text-purple-600">
+                <span class="material-icons-outlined">security</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ roles().length }}</span>
+                <span class="stat-label">Total Roles</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-wrapper">
+        @if (isLoading()) {
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+        } @else if (roles().length === 0) {
+        <div class="empty-state">
+            <div class="empty-icon">
+                <span class="material-icons-outlined">security</span>
+            </div>
+            <h3 class="empty-title">No Roles Found</h3>
+            <p class="empty-message">No role data available at the moment</p>
+        </div>
+        } @else {
+        <!-- ROLE CARDS GRID -->
+        <div class="role-grid">
+            @for (role of roles(); track role.id) {
+            <div class="role-card" [ngClass]="getRoleColorClass(role.roleName)">
+                <!-- Card Header -->
+                <div class="role-card-header">
+                    <div class="role-icon-wrapper">
+                        <span class="material-icons-outlined">{{ getRoleIcon(role.roleName) }}</span>
+                    </div>
+                    <div class="role-info">
+                        <h3 class="role-name">{{ role.roleName }}</h3>
+                        <p class="role-description">{{ role.roleDescription }}</p>
+                    </div>
+                    <div class="role-actions">
+                        <button class="btn-action btn-edit" (click)="editRole(role)" title="Edit Role">
+                            <span class="material-icons-outlined">edit</span>
+                        </button>
+                        <button class="btn-action btn-delete" (click)="deleteRole(role)" title="Delete Role">
+                            <span class="material-icons-outlined">delete</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Permissions Section -->
+                <div class="permissions-section">
+                    <h4 class="permissions-title">
+                        <span class="material-icons-outlined">vpn_key</span>
+                        Permissions ({{ role.permissions.length }})
+                    </h4>
+                    <div class="permissions-list">
+                        @if (role.permissions && role.permissions.length > 0) {
+                        @for (permission of role.permissions; track permission) {
+                        <span class="permission-badge">{{ permission }}</span>
+                        }
+                        } @else {
+                        <span class="no-permissions">No permissions assigned</span>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        }
+    </div>
+</div>
