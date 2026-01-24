@@ -22,6 +22,10 @@
             <p class="page-subtitle">Manage application roles and their associated permissions.</p>
         </div>
         <div class="header-actions">
+            <button class="btn-primary" (click)="openCreateModal()">
+                <span class="material-icons-outlined">add</span>
+                Add Role
+            </button>
             <button class="btn-icon" (click)="loadRoles()" title="Refresh">
                 <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
             </button>
@@ -70,7 +74,7 @@
                         <p class="role-description">{{ role.roleDescription }}</p>
                     </div>
                     <div class="role-actions">
-                        <button class="btn-action btn-edit" (click)="editRole(role)" title="Edit Role">
+                        <button class="btn-action btn-edit" (click)="openEditModal(role)" title="Edit Role">
                             <span class="material-icons-outlined">edit</span>
                         </button>
                         <button class="btn-action btn-delete" (click)="deleteRole(role)" title="Delete Role">
@@ -101,3 +105,152 @@
         }
     </div>
 </div>
+
+<!-- CREATE ROLE MODAL -->
+@if (isCreateModalOpen()) {
+<div class="modal-overlay">
+    <div class="modal-container modal-lg">
+        <div class="modal-header">
+            <h3>Add New Role</h3>
+            <button class="btn-close" (click)="closeCreateModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Error Alert -->
+            @if (formError()) {
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ formError() }}</span>
+            </div>
+            }
+
+            <!-- Role Name -->
+            <div class="form-group">
+                <label>Role Name <span class="required">*</span></label>
+                <input type="text" [ngModel]="createRoleForm().roleName" (ngModelChange)="updateRoleName($event)"
+                    [class.error]="fieldErrors()['roleName']" placeholder="e.g. ADMIN, MANAGER" maxlength="15">
+                @if (fieldErrors()['roleName']) {
+                <span class="error-text">{{ fieldErrors()['roleName'] }}</span>
+                }
+            </div>
+
+            <!-- Role Description -->
+            <div class="form-group">
+                <label>Description <span class="required">*</span></label>
+                <textarea [ngModel]="createRoleForm().roleDescription" (ngModelChange)="updateRoleDescription($event)"
+                    [class.error]="fieldErrors()['roleDescription']" placeholder="Brief description of this role..."
+                    rows="3" maxlength="255"></textarea>
+                @if (fieldErrors()['roleDescription']) {
+                <span class="error-text">{{ fieldErrors()['roleDescription'] }}</span>
+                }
+            </div>
+
+            <!-- Permissions Selection -->
+            <div class="form-group">
+                <label>Permissions</label>
+                <p class="form-hint">Select permissions to assign to this role</p>
+                <div class="permissions-checkbox-grid">
+                    @for (permission of permissions(); track permission.id) {
+                    <label class="permission-checkbox">
+                        <input type="checkbox" [checked]="isPermissionSelected(permission.id)"
+                            (change)="togglePermission(permission.id)">
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-label">
+                            <strong>{{ permission.permissionName }}</strong>
+                            <small>{{ permission.permissionDescription }}</small>
+                        </span>
+                    </label>
+                    }
+                </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeCreateModal()">Cancel</button>
+                <button class="btn-primary" (click)="submitCreateRole()" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-small"></span> Saving...
+                    } @else {
+                    Save Role
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- EDIT ROLE MODAL -->
+@if (isEditModalOpen()) {
+<div class="modal-overlay">
+    <div class="modal-container modal-lg">
+        <div class="modal-header">
+            <h3>Edit Role</h3>
+            <button class="btn-close" (click)="closeEditModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Error Alert -->
+            @if (formError()) {
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ formError() }}</span>
+            </div>
+            }
+
+            <!-- Role Name (Read Only) -->
+            <div class="form-group">
+                <label>Role Name</label>
+                <input type="text" [value]="editingRoleName()" disabled class="input-readonly">
+                <span class="form-hint">Role name cannot be changed</span>
+            </div>
+
+            <!-- Role Description -->
+            <div class="form-group">
+                <label>Description <span class="required">*</span></label>
+                <textarea [ngModel]="editRoleForm().roleDescription" (ngModelChange)="updateEditDescription($event)"
+                    [class.error]="fieldErrors()['roleDescription']" placeholder="Brief description of this role..."
+                    rows="3" maxlength="255"></textarea>
+                @if (fieldErrors()['roleDescription']) {
+                <span class="error-text">{{ fieldErrors()['roleDescription'] }}</span>
+                }
+            </div>
+
+            <!-- Permissions Selection -->
+            <div class="form-group">
+                <label>Permissions</label>
+                <p class="form-hint">Select permissions to assign to this role</p>
+                <div class="permissions-checkbox-grid">
+                    @for (permission of permissions(); track permission.id) {
+                    <label class="permission-checkbox">
+                        <input type="checkbox" [checked]="isEditPermissionSelected(permission.id)"
+                            (change)="toggleEditPermission(permission.id)">
+                        <span class="checkbox-custom"></span>
+                        <span class="checkbox-label">
+                            <strong>{{ permission.permissionName }}</strong>
+                            <small>{{ permission.permissionDescription }}</small>
+                        </span>
+                    </label>
+                    }
+                </div>
+            </div>
+
+            <!-- Modal Actions -->
+            <div class="modal-actions">
+                <button class="btn-secondary" (click)="closeEditModal()">Cancel</button>
+                <button class="btn-primary" (click)="submitEditRole()" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-small"></span> Updating...
+                    } @else {
+                    Update Role
+                    }
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+}
