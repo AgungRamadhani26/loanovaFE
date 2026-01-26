@@ -1,0 +1,372 @@
+<div class="branch-management-container">
+    @if (successMessage()) {
+    <div class="success-toast">
+        <span class="material-icons-outlined">check_circle</span>
+        <span>{{ successMessage() }}</span>
+    </div>
+    }
+
+    <!-- ERROR TOAST -->
+    @if (errorMessage()) {
+    <div class="error-toast">
+        <span class="material-icons-outlined">error</span>
+        <span>{{ errorMessage() }}</span>
+    </div>
+    }
+
+    <!-- HEADER SECTION -->
+    <div class="header-section">
+        <div class="title-wrapper">
+            <h1 class="page-title">User Plafond Management</h1>
+            <p class="page-subtitle">Assign dan kelola plafond untuk customer</p>
+        </div>
+    </div>
+
+    <!-- STATS SUMMARY -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-100 text-blue-600">
+                <span class="material-icons-outlined">people</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ customers().length }}</span>
+                <span class="stat-label">Total Customer</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="table-card shadow-sm border border-slate-200">
+        <!-- Search & Filter Bar -->
+        <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
+            <div class="search-box">
+                <span class="material-icons-outlined">search</span>
+                <input type="text" placeholder="Cari username, email, atau cabang..." [ngModel]="searchQuery()"
+                    (ngModelChange)="searchQuery.set($event)">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-icon" (click)="loadCustomers()">
+                    <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE CONTENT -->
+        @if (isLoading()) {
+        <!-- LOADING STATE -->
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+        } @else if (filteredCustomers().length === 0) {
+        <!-- EMPTY STATE -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <span class="material-icons-outlined">person_off</span>
+            </div>
+            <h3 class="empty-title">No Customers Found</h3>
+            <p class="empty-message">
+                @if (searchQuery()) {
+                Coba ubah kriteria pencarian
+                } @else {
+                Tidak ada data customer tersedia
+                }
+            </p>
+        </div>
+        } @else {
+        <!-- DATA TABLE -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 60px;">NO</th>
+                        <th>USERNAME</th>
+                        <th>EMAIL</th>
+                        <th>STATUS</th>
+                        <th style="width: 180px; text-align: center;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (user of paginatedCustomers(); track user.id; let i = $index) {
+                    <tr>
+                        <td style="text-align: center; font-weight: 600; color: #64748b;">
+                            {{ (currentPage() - 1) * pageSize() + i + 1 }}
+                        </td>
+                        <td>
+                            <div class="user-cell">
+                                <span class="user-avatar">{{ user.username.charAt(0).toUpperCase() }}</span>
+                                <span class="user-name">{{ user.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="text-slate-600">{{ user.email }}</span>
+                        </td>
+                        <td>
+                            <span class="status-badge" [class.active]="user.isActive" [class.inactive]="!user.isActive">
+                                {{ user.isActive ? 'Aktif' : 'Nonaktif' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-view" (click)="openViewActiveModal(user)"
+                                    title="View Active Plafond">
+                                    <span class="material-icons-outlined">credit_card</span>
+                                </button>
+                                <button class="btn-action btn-history" (click)="openViewHistoryModal(user)"
+                                    title="View History">
+                                    <span class="material-icons-outlined">history</span>
+                                </button>
+                                <button class="btn-action btn-assign" (click)="openAssignModal(user)"
+                                    title="Assign Plafond">
+                                    <span class="material-icons-outlined">add_card</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                <span>Showing {{ showingFrom() }} to {{ showingTo() }} of {{ filteredCustomers().length }}
+                    entries</span>
+                <select class="page-size-selector" [value]="pageSize()" (change)="onPageSizeChange($event)">
+                    <option value="5">5 per page</option>
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
+
+            <div class="pagination-controls">
+                <button class="page-btn" [disabled]="currentPage() === 1" (click)="previousPage()">
+                    <span class="material-icons-outlined">chevron_left</span>
+                </button>
+
+                @for (page of pages(); track page) {
+                <button class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">
+                    {{ page }}
+                </button>
+                }
+
+                <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                    <span class="material-icons-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+<!-- VIEW ACTIVE PLAFOND MODAL -->
+@if (isViewActiveModalOpen()) {
+<div class="modal-overlay" (click)="closeViewActiveModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <span class="material-icons-outlined">credit_card</span>
+                Plafond Aktif
+            </h3>
+            <button class="btn-close" (click)="closeViewActiveModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="user-detail-header">
+                <span class="user-avatar-lg">{{ viewingUser()?.username?.charAt(0)?.toUpperCase() }}</span>
+                <div>
+                    <h4>{{ viewingUser()?.username }}</h4>
+                    <p>{{ viewingUser()?.email }}</p>
+                </div>
+            </div>
+
+            @if (isLoadingActive()) {
+            <div class="loading-container small">
+                <div class="loading-spinner"></div>
+            </div>
+            } @else if (activeError()) {
+            <div class="info-alert">
+                <span class="material-icons-outlined">info</span>
+                <span>{{ activeError() }}</span>
+            </div>
+            } @else if (activePlafond()) {
+            <div class="plafond-card active">
+                <div class="plafond-header">
+                    <span class="plafond-name">{{ activePlafond()?.plafondName }}</span>
+                    <span class="badge-active">Aktif</span>
+                </div>
+                <div class="plafond-details">
+                    <div class="detail-row">
+                        <span>Max Amount</span>
+                        <strong>{{ formatCurrency(activePlafond()?.maxAmount || 0) }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Remaining</span>
+                        <strong>{{ formatCurrency(activePlafond()?.remainingAmount || 0) }}</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Assigned At</span>
+                        <strong>{{ formatDate(activePlafond()?.assignedAt || '') }}</strong>
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeViewActiveModal()">Tutup</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- VIEW HISTORY MODAL -->
+@if (isViewHistoryModalOpen()) {
+<div class="modal-overlay" (click)="closeViewHistoryModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <span class="material-icons-outlined">history</span>
+                Riwayat Plafond
+            </h3>
+            <button class="btn-close" (click)="closeViewHistoryModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="user-detail-header">
+                <span class="user-avatar-lg">{{ historyUser()?.username?.charAt(0)?.toUpperCase() }}</span>
+                <div>
+                    <h4>{{ historyUser()?.username }}</h4>
+                    <p>{{ historyUser()?.email }}</p>
+                </div>
+            </div>
+
+            @if (isLoadingHistory()) {
+            <div class="loading-container small">
+                <div class="loading-spinner"></div>
+            </div>
+            } @else if (historyError()) {
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ historyError() }}</span>
+            </div>
+            } @else if (plafondHistory().length === 0) {
+            <div class="info-alert">
+                <span class="material-icons-outlined">info</span>
+                <span>Belum ada riwayat plafond untuk user ini</span>
+            </div>
+            } @else {
+            <div class="plafond-history-list">
+                @for (plafond of plafondHistory(); track plafond.id) {
+                <div class="plafond-card" [class.active]="plafond.isActive" [class.inactive]="!plafond.isActive">
+                    <div class="plafond-header">
+                        <span class="plafond-name">{{ plafond.plafondName }}</span>
+                        <span class="badge-active" [class.inactive]="!plafond.isActive">
+                            {{ plafond.isActive ? 'Aktif' : 'Nonaktif' }}
+                        </span>
+                    </div>
+                    <div class="plafond-details">
+                        <div class="detail-row">
+                            <span>Max Amount</span>
+                            <strong>{{ formatCurrency(plafond.maxAmount) }}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Remaining</span>
+                            <strong>{{ formatCurrency(plafond.remainingAmount) }}</strong>
+                        </div>
+                        <div class="detail-row">
+                            <span>Assigned At</span>
+                            <strong>{{ formatDate(plafond.assignedAt) }}</strong>
+                        </div>
+                    </div>
+                </div>
+                }
+            </div>
+            }
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeViewHistoryModal()">Tutup</button>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ASSIGN PLAFOND MODAL -->
+@if (isAssignModalOpen()) {
+<div class="modal-overlay" (click)="closeAssignModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>
+                <span class="material-icons-outlined">add_card</span>
+                Assign Plafond
+            </h3>
+            <button class="btn-close" (click)="closeAssignModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <div class="modal-body">
+            <div class="user-detail-header">
+                <span class="user-avatar-lg">{{ assigningUser()?.username?.charAt(0)?.toUpperCase() }}</span>
+                <div>
+                    <h4>{{ assigningUser()?.username }}</h4>
+                    <p>{{ assigningUser()?.email }}</p>
+                </div>
+            </div>
+
+            <!-- Error Alert -->
+            @if (formError()) {
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ formError() }}</span>
+            </div>
+            }
+
+            <!-- Plafond Selection -->
+            <div class="form-group">
+                <label>Pilih Plafond <span class="required">*</span></label>
+                <select [ngModel]="assignForm().plafondId" (ngModelChange)="onPlafondChange($event)">
+                    <option [ngValue]="null">-- Pilih Plafond --</option>
+                    @for (plafond of plafonds(); track plafond.id) {
+                    <option [ngValue]="plafond.id">{{ plafond.name }} (Max: {{ formatCurrency(plafond.maxAmount) }})
+                    </option>
+                    }
+                </select>
+                @if (fieldErrors()['plafondId']) {
+                <span class="error-text">{{ fieldErrors()['plafondId'] }}</span>
+                }
+            </div>
+
+            <!-- Max Amount -->
+            <div class="form-group">
+                <label>Max Amount <span class="required">*</span></label>
+                <input type="number" [ngModel]="assignForm().maxAmount" (ngModelChange)="updateMaxAmount($event)"
+                    [class.error]="fieldErrors()['maxAmount']" placeholder="Masukkan jumlah maksimal">
+                @if (selectedPlafondMaxAmount() > 0) {
+                <span class="form-hint">Maksimal: {{ formatCurrency(selectedPlafondMaxAmount()) }}</span>
+                }
+                @if (fieldErrors()['maxAmount']) {
+                <span class="error-text">{{ fieldErrors()['maxAmount'] }}</span>
+                }
+            </div>
+
+            <!-- Warning -->
+            <div class="warning-alert">
+                <span class="material-icons-outlined">warning</span>
+                <span>Plafond lama yang masih aktif akan dinonaktifkan otomatis</span>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn-secondary" (click)="closeAssignModal()">Cancel</button>
+            <button class="btn-primary" (click)="submitAssign()" [disabled]="isSubmitting()">
+                @if (isSubmitting()) {
+                <span class="spinner-small"></span> Processing...
+                } @else {
+                Assign Plafond
+                }
+            </button>
+        </div>
+    </div>
+</div>
+}

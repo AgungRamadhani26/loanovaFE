@@ -70,6 +70,12 @@ export class SidebarComponent {
             path: '/admin/plafond',
             icon: 'monetization_on',
             permissions: ['PLAFOND:READ']
+        },
+        {
+            label: 'User Plafond',
+            path: '/admin/user-plafonds',
+            icon: 'assignment_ind',
+            permissions: ['USER_PLAFOND:READ']
         }
     ];
 
