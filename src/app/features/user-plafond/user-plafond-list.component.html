@@ -192,7 +192,7 @@
                 <span>{{ activeError() }}</span>
             </div>
             } @else if (activePlafond()) {
-            <div class="plafond-card active">
+            <div class="plafond-card" [ngClass]="getPlafondColorClass(activePlafond()?.plafondName)">
                 <div class="plafond-header">
                     <span class="plafond-name">{{ activePlafond()?.plafondName }}</span>
                     <span class="badge-active">Aktif</span>
@@ -260,7 +260,8 @@
             } @else {
             <div class="plafond-history-list">
                 @for (plafond of plafondHistory(); track plafond.id) {
-                <div class="plafond-card" [class.active]="plafond.isActive" [class.inactive]="!plafond.isActive">
+                <div class="plafond-card"
+                    [ngClass]="[plafond.isActive ? getPlafondColorClass(plafond.plafondName) : 'inactive']">
                     <div class="plafond-header">
                         <span class="plafond-name">{{ plafond.plafondName }}</span>
                         <span class="badge-active" [class.inactive]="!plafond.isActive">

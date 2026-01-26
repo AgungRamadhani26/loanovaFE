@@ -674,12 +674,92 @@ tbody td {
 }
 
 .plafond-card.active {
+    /* Default active style (fallback) */
+    border-color: #e2e8f0;
+    background: #f8fafc;
+}
+
+/* DYNAMIC COLORS */
+.plafond-card.bronze {
+    border-color: #cd7f32;
+    background: #fff8f0;
+}
+
+.plafond-card.bronze .plafond-name,
+.plafond-card.bronze .badge-active {
+    color: #a05a2c;
+}
+
+.plafond-card.bronze .badge-active {
+    background: #fdf3e7;
+}
+
+.plafond-card.silver {
+    border-color: #94a3b8;
+    background: #f8fafc;
+}
+
+.plafond-card.silver .plafond-name,
+.plafond-card.silver .badge-active {
+    color: #475569;
+}
+
+.plafond-card.silver .badge-active {
+    background: #f1f5f9;
+}
+
+.plafond-card.gold {
+    border-color: #eab308;
+    background: #fefce8;
+}
+
+.plafond-card.gold .plafond-name,
+.plafond-card.gold .badge-active {
+    color: #b45309;
+}
+
+.plafond-card.gold .badge-active {
+    background: #fef9c3;
+}
+
+.plafond-card.platinum {
+    border-color: #0ea5e9;
+    background: #f0f9ff;
+}
+
+.plafond-card.platinum .plafond-name,
+.plafond-card.platinum .badge-active {
+    color: #0369a1;
+}
+
+.plafond-card.platinum .badge-active {
+    background: #e0f2fe;
+}
+
+.plafond-card.red {
+    border-color: #ef4444;
+    background: #fef2f2;
+}
+
+.plafond-card.red .plafond-name,
+.plafond-card.red .badge-active {
+    color: #b91c1c;
+}
+
+.plafond-card.red .badge-active {
+    background: #fee2e2;
+}
+
+/* Keep current green for default/active generic */
+.plafond-card.default {
     border-color: #22c55e;
     background: #f0fdf4;
 }
 
 .plafond-card.inactive {
     opacity: 0.7;
+    border-color: #cbd5e1;
+    background: #f1f5f9;
 }
 
 .plafond-header {

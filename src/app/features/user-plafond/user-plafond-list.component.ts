@@ -304,4 +304,15 @@ export class UserPlafondListComponent implements OnInit {
             year: 'numeric'
         });
     }
+
+    getPlafondColorClass(plafondName: string | undefined): string {
+        if (!plafondName) return 'default';
+        const name = plafondName.toLowerCase();
+        if (name.includes('bronze')) return 'bronze';
+        if (name.includes('silver')) return 'silver';
+        if (name.includes('gold')) return 'gold';
+        if (name.includes('platinum')) return 'platinum';
+        if (name.includes('red')) return 'red';
+        return 'default';
+    }
 }
