@@ -236,12 +236,13 @@ export class PlafondListComponent implements OnInit {
     const errorResponse = err.error;
 
     if (err.status === 400 && errorResponse?.data?.errors) {
+      this.errorMessage.set('Validasi gagal');
       this.validationErrors.set(errorResponse.data.errors);
     } else if (err.status === 409) {
+      this.errorMessage.set('Validasi gagal');
       this.validationErrors.set({ name: errorResponse.message });
     } else if (err.status === 400 && errorResponse?.message) {
-        this.errorMessage.set(errorResponse.message);
-        setTimeout(() => this.errorMessage.set(''), 5000);
+      this.errorMessage.set(errorResponse.message);
     } else {
       this.errorMessage.set(errorResponse?.message || 'Terjadi kesalahan sistem');
     }

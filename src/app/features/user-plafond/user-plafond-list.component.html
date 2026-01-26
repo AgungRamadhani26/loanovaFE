@@ -258,32 +258,42 @@
                 <span>Belum ada riwayat plafond untuk user ini</span>
             </div>
             } @else {
-            <div class="plafond-history-list">
-                @for (plafond of plafondHistory(); track plafond.id) {
-                <div class="plafond-card"
-                    [ngClass]="[plafond.isActive ? getPlafondColorClass(plafond.plafondName) : 'inactive']">
-                    <div class="plafond-header">
-                        <span class="plafond-name">{{ plafond.plafondName }}</span>
-                        <span class="badge-active" [class.inactive]="!plafond.isActive">
-                            {{ plafond.isActive ? 'Aktif' : 'Nonaktif' }}
-                        </span>
-                    </div>
-                    <div class="plafond-details">
-                        <div class="detail-row">
-                            <span>Max Amount</span>
-                            <strong>{{ formatCurrency(plafond.maxAmount) }}</strong>
-                        </div>
-                        <div class="detail-row">
-                            <span>Remaining</span>
-                            <strong>{{ formatCurrency(plafond.remainingAmount) }}</strong>
-                        </div>
-                        <div class="detail-row">
-                            <span>Assigned At</span>
-                            <strong>{{ formatDate(plafond.assignedAt) }}</strong>
-                        </div>
-                    </div>
-                </div>
-                }
+            <div class="table-wrapper history-table-wrapper">
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>Plafond</th>
+                            <th>Max Limit</th>
+                            <th>Sisa Limit</th>
+                            <th>Tanggal Assign</th>
+                            <th class="text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (plafond of plafondHistory(); track plafond.id) {
+                        <tr [class.active-row]="plafond.isActive">
+                            <td>
+                                <div class="history-name-cell">
+                                    <div class="color-dot"
+                                        [ngClass]="plafond.isActive ? getPlafondColorClass(plafond.plafondName) : 'inactive'">
+                                    </div>
+                                    <span class="font-bold text-slate-700">{{ plafond.plafondName }}</span>
+                                </div>
+                            </td>
+                            <td>{{ formatCurrency(plafond.maxAmount) }}</td>
+                            <td>{{ formatCurrency(plafond.remainingAmount) }}</td>
+                            <td>{{ formatDate(plafond.assignedAt) }}</td>
+                            <td class="text-center">
+                                @if (plafond.isActive) {
+                                <span class="badge-mini active">Aktif</span>
+                                } @else {
+                                <span class="badge-mini inactive">Nonaktif</span>
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
             </div>
             }
         </div>
@@ -327,7 +337,8 @@
             <!-- Plafond Selection -->
             <div class="form-group">
                 <label>Pilih Plafond <span class="required">*</span></label>
-                <select [ngModel]="assignForm().plafondId" (ngModelChange)="onPlafondChange($event)">
+                <select [ngModel]="assignForm().plafondId" (ngModelChange)="onPlafondChange($event)"
+                    [class.error]="fieldErrors()['plafondId']">
                     <option [ngValue]="null">-- Pilih Plafond --</option>
                     @for (plafond of plafonds(); track plafond.id) {
                     <option [ngValue]="plafond.id">{{ plafond.name }} (Max: {{ formatCurrency(plafond.maxAmount) }})
@@ -339,17 +350,16 @@
                 }
             </div>
 
-            <!-- Max Amount -->
+            <!-- Max Amount (Auto-filled) -->
             <div class="form-group">
-                <label>Max Amount <span class="required">*</span></label>
-                <input type="number" [ngModel]="assignForm().maxAmount" (ngModelChange)="updateMaxAmount($event)"
-                    [class.error]="fieldErrors()['maxAmount']" placeholder="Masukkan jumlah maksimal">
-                @if (selectedPlafondMaxAmount() > 0) {
-                <span class="form-hint">Maksimal: {{ formatCurrency(selectedPlafondMaxAmount()) }}</span>
-                }
-                @if (fieldErrors()['maxAmount']) {
-                <span class="error-text">{{ fieldErrors()['maxAmount'] }}</span>
-                }
+                <label>Max Amount (Auto)</label>
+                <div class="readonly-input">
+                    @if (selectedPlafondMaxAmount() > 0) {
+                    {{ formatCurrency(selectedPlafondMaxAmount()) }}
+                    } @else {
+                    <span class="text-gray-400">- Pilih plafon dulu -</span>
+                    }
+                </div>
             </div>
 
             <!-- Warning -->

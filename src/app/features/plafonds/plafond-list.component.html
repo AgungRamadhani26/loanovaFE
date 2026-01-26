@@ -76,7 +76,8 @@
                                 <h3 class="corp-title">{{ plafond.name }}</h3>
                                 <span class="corp-subtitle">{{ plafond.description }}</span>
                             </div>
-                            <button class="btn-icon-small delete" (click)="deletePlafond(plafond.id, plafond.name)" title="Delete"
+                            <button class="btn-icon-small delete" (click)="deletePlafond(plafond.id, plafond.name)"
+                                title="Delete"
                                 style="margin-left: auto; background: transparent; border: none; cursor: pointer; color: #ef4444;">
                                 <span class="material-icons-outlined">delete</span>
                             </button>
@@ -124,7 +125,7 @@
 
             <div class="modal-body">
                 @if (errorMessage()) {
-                <div class="error-alert" style="background: #fee2e2; color: #b91c1c; padding: 12px; border-radius: 8px; display: flex; align-items: center; gap: 8px; margin-bottom: 24px;">
+                <div class="error-alert">
                     <span class="material-icons-outlined">error</span>
                     <span>{{ errorMessage() }}</span>
                 </div>

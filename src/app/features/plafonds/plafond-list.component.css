@@ -593,7 +593,8 @@
 /* ERROR TOAST */
 .error-toast {
     position: fixed;
-    top: 80px; /* Below success toast */
+    top: 80px;
+    /* Below success toast */
     right: 24px;
     background: #ef4444;
     color: white;
@@ -616,4 +617,31 @@
 .row-platinum:hover {
     background-color: #bae6fd !important;
     /* Sky-200 */
+}
+
+/* ERROR ALERTS */
+.error-alert,
+.info-alert,
+.warning-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+.error-alert {
+    background: #fef2f2;
+    color: #dc2626;
+}
+
+.info-alert {
+    background: #f0f9ff;
+    color: #0284c7;
+}
+
+.warning-alert {
+    background: #fffbeb;
+    color: #d97706;
 }

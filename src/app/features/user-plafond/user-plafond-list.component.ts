@@ -215,17 +215,18 @@ export class UserPlafondListComponent implements OnInit {
         }
     }
 
-    updateMaxAmount(value: number): void {
-        const form = this.assignForm();
-        this.assignForm.set({ ...form, maxAmount: value });
-    }
+
 
     submitAssign(): void {
         const user = this.assigningUser();
         const form = this.assignForm();
+        const maxAmount = this.selectedPlafondMaxAmount();
 
-        if (!user || !form.plafondId || !form.maxAmount) {
-            this.formError.set('Semua field wajib diisi');
+        if (!user || !form.plafondId) {
+            this.formError.set('Validasi gagal');
+            if (!form.plafondId) {
+                this.fieldErrors.set({ plafondId: 'Pilih plafond terlebih dahulu' });
+            }
             return;
         }
 
@@ -236,7 +237,7 @@ export class UserPlafondListComponent implements OnInit {
         const request: AssignUserPlafondRequest = {
             userId: user.id,
             plafondId: form.plafondId,
-            maxAmount: form.maxAmount
+            maxAmount: maxAmount
         };
 
         this.userPlafondService.assignPlafond(request).subscribe({

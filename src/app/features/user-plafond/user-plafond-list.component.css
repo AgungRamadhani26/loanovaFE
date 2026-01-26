@@ -809,9 +809,122 @@ tbody td {
     color: #1e293b;
 }
 
+/* HISTORY LIST TIMELINE STYLE */
 .plafond-history-list {
     max-height: 400px;
     overflow-y: auto;
+    padding-right: 4px;
+}
+
+.history-item {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    border-radius: 12px;
+    background: #fff;
+    border: 1px solid #f1f5f9;
+    margin-bottom: 12px;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.history-item.inactive {
+    background: #f8fafc;
+    border-color: #f1f5f9;
+}
+
+.history-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #e2e8f0;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.history-icon.active {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.history-content {
+    flex: 1;
+}
+
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.history-name {
+    font-weight: 700;
+    color: #1e293b;
+    font-size: 0.95rem;
+}
+
+.history-date {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.history-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #475569;
+}
+
+.history-details strong {
+    color: #0f172a;
+}
+
+.divider {
+    color: #cbd5e1;
+}
+
+.badge-mini {
+    display: inline-block;
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 600;
+    margin-top: 6px;
+}
+
+.badge-mini.active {
+    background: #22c55e;
+    color: white;
+}
+
+/* DYNAMIC BORDERS FOR HISTORY ITEMS */
+.history-item.bronze {
+    border-left: 4px solid #cd7f32;
+}
+
+.history-item.silver {
+    border-left: 4px solid #94a3b8;
+}
+
+.history-item.gold {
+    border-left: 4px solid #eab308;
+}
+
+.history-item.platinum {
+    border-left: 4px solid #0ea5e9;
+}
+
+.history-item.red {
+    border-left: 4px solid #ef4444;
+}
+
+.history-item.default {
+    border-left: 4px solid #22c55e;
 }
 
 /* FORM STYLES */
@@ -841,6 +954,21 @@ tbody td {
     color: #1e293b;
     transition: all 0.2s;
     font-family: inherit;
+}
+
+.readonly-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    color: #475569;
+    background: #f8fafc;
+    font-weight: 600;
+}
+
+.text-gray-400 {
+    color: #94a3b8;
 }
 
 .form-group input:focus,
@@ -930,8 +1058,121 @@ tbody td {
         text-align: center;
     }
 
-    .pagination-buttons {
-        justify-content: center;
-        flex-wrap: wrap;
-    }
+}
+
+.pagination-buttons {
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* HISTORY TABLE STYLES (NEW COMPACT DESIGN) */
+.history-table-wrapper {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+}
+
+.history-table th {
+    background: #f8fafc;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    padding: 12px 16px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.history-table td {
+    padding: 12px 16px;
+    font-size: 0.825rem;
+    color: #1e293b;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.history-table tr:last-child td {
+    border-bottom: none;
+}
+
+.history-table tr.active-row {
+    background: #f0fdf4;
+}
+
+.history-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.color-dot.bronze {
+    background: #cd7f32;
+}
+
+.color-dot.silver {
+    background: #94a3b8;
+}
+
+.color-dot.gold {
+    background: #eab308;
+}
+
+.color-dot.platinum {
+    background: #0ea5e9;
+}
+
+.color-dot.red {
+    background: #ef4444;
+}
+
+.color-dot.active {
+    background: #22c55e;
+}
+
+.color-dot.inactive {
+    background: #cbd5e1;
+}
+
+.color-dot.default {
+    background: #22c55e;
+}
+
+.badge-mini {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.badge-mini.active {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.badge-mini.inactive {
+    background: #f1f5f9;
+    color: #94a3b8;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.text-slate-700 {
+    color: #334155;
 }
