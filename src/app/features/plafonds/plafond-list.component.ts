@@ -20,11 +20,12 @@ export class PlafondListComponent implements OnInit {
   plafonds = signal<PlafondResponse[]>([]);
   isLoading = signal<boolean>(true);
   searchQuery = signal<string>('');
-  errorMessage = signal<string>('');
+  errorMessage = signal<string>(''); // Global error (Toast)
   successMessage = signal<string | null>(null);
 
   // Modal & Form State
   isAddModalOpen = signal<boolean>(false);
+  formError = signal<string>(''); // Specific form error (Modal Alert)
 
   isSubmitting = signal<boolean>(false);
   validationErrors = signal<{ [key: string]: string }>({});
@@ -174,11 +175,13 @@ export class PlafondListComponent implements OnInit {
   openAddModal(): void {
     this.addPlafondForm.set({ ...this.initialPlafondState });
     this.validationErrors.set({});
+    this.formError.set(''); // Reset form specific error
     this.isAddModalOpen.set(true);
   }
 
   closeAddModal(): void {
     this.isAddModalOpen.set(false);
+    this.formError.set('');
   }
 
   // Helper used by html to close whatever is open (if any generic close button exists, though specific is better)
@@ -189,6 +192,7 @@ export class PlafondListComponent implements OnInit {
   submitAddPlafond(): void {
     this.isSubmitting.set(true);
     this.validationErrors.set({});
+    this.formError.set('');
 
     this.plafondService.createPlafond(this.addPlafondForm()).subscribe({
       next: (response) => {
@@ -236,15 +240,15 @@ export class PlafondListComponent implements OnInit {
     const errorResponse = err.error;
 
     if (err.status === 400 && errorResponse?.data?.errors) {
-      this.errorMessage.set('Validasi gagal');
+      this.formError.set('Validasi gagal');
       this.validationErrors.set(errorResponse.data.errors);
     } else if (err.status === 409) {
-      this.errorMessage.set('Validasi gagal');
+      this.formError.set('Validasi gagal');
       this.validationErrors.set({ name: errorResponse.message });
     } else if (err.status === 400 && errorResponse?.message) {
-      this.errorMessage.set(errorResponse.message);
+      this.formError.set(errorResponse.message);
     } else {
-      this.errorMessage.set(errorResponse?.message || 'Terjadi kesalahan sistem');
+      this.formError.set(errorResponse?.message || 'Terjadi kesalahan sistem');
     }
   }
 

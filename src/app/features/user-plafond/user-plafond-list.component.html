@@ -41,7 +41,7 @@
         <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
             <div class="search-box">
                 <span class="material-icons-outlined">search</span>
-                <input type="text" placeholder="Cari username, email, atau cabang..." [ngModel]="searchQuery()"
+                <input type="text" placeholder="Cari username atau email..." [ngModel]="searchQuery()"
                     (ngModelChange)="searchQuery.set($event)">
             </div>
             <div class="filter-actions">

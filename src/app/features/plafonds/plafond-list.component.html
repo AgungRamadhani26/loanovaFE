@@ -124,10 +124,10 @@
             </div>
 
             <div class="modal-body">
-                @if (errorMessage()) {
+                @if (formError()) {
                 <div class="error-alert">
                     <span class="material-icons-outlined">error</span>
-                    <span>{{ errorMessage() }}</span>
+                    <span>{{ formError() }}</span>
                 </div>
                 }
 
