@@ -53,4 +53,12 @@ export class HeaderComponent {
             }
         });
     }
+
+    /**
+     * GO TO PROFILE
+     * Navigasi ke halaman profil user
+     */
+    goToProfile() {
+        this.router.navigate(['/admin/profile']);
+    }
 }

@@ -50,4 +50,13 @@ export class UserService {
     deleteUser(id: number): Observable<ApiResponse<void>> {
         return this.http.delete<ApiResponse<void>>(`${this.API_URL}/${id}`);
     }
+
+    /**
+     * Mengambil data pengguna berdasarkan username
+     * Endpoint: GET /api/users/by-username/{username}
+     * Digunakan untuk halaman profil user yang login
+     */
+    getUserByUsername(username: string): Observable<ApiResponse<UserData>> {
+        return this.http.get<ApiResponse<UserData>>(`${this.API_URL}/by-username/${username}`);
+    }
 }

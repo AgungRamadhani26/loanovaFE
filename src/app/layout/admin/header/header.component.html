@@ -40,20 +40,19 @@
             </div>
 
             <!-- Avatar Dropdown Trigger -->
-            <div
+            <div (click)="goToProfile()"
                 class="p-1 px-1.5 rounded-2xl flex items-center gap-2 hover:bg-slate-50 transition-all cursor-pointer border border-transparent hover:border-slate-100 group">
                 <div
                     class="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-black text-sm shadow-md group-hover:scale-105 transition-transform">
                     {{ user().username ? user().username![0].toUpperCase() : 'U' }}
                 </div>
-
-                <!-- LOGOUT BUTTON IN HEADER -->
-                <button (click)="onLogout()"
-                    class="p-2 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all"
-                    title="Logout">
-                    <span class="material-icons-outlined text-xl">logout</span>
-                </button>
             </div>
+
+            <!-- LOGOUT BUTTON IN HEADER -->
+            <button (click)="onLogout()"
+                class="p-2 rounded-lg text-slate-300 hover:text-red-500 hover:bg-red-50 transition-all" title="Logout">
+                <span class="material-icons-outlined text-xl">logout</span>
+            </button>
         </div>
 
     </div>

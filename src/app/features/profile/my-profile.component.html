@@ -1,0 +1,235 @@
+<div class="p-4 md:p-8">
+    <!-- HEADER -->
+    <div class="mb-4">
+        <button (click)="goBack()"
+            class="flex items-center gap-2 text-slate-500 hover:text-blue-600 transition-colors mb-3">
+            <span class="material-icons-outlined text-lg">arrow_back</span>
+            <span class="text-sm font-medium">Kembali ke Dashboard</span>
+        </button>
+        <h1 class="text-xl font-black text-slate-900">Profil Saya</h1>
+        <p class="text-slate-500 text-xs">Lihat dan kelola informasi akun Anda</p>
+    </div>
+
+    <!-- LOADING STATE -->
+    @if (isLoading()) {
+    <div class="flex items-center justify-center py-12">
+        <div class="animate-spin rounded-full h-10 w-10 border-4 border-blue-600 border-t-transparent"></div>
+    </div>
+    }
+
+    <!-- ERROR STATE -->
+    @if (error()) {
+    <div class="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+        <span class="material-icons-outlined text-red-500 text-3xl mb-1">error_outline</span>
+        <p class="text-red-600 font-medium text-sm">{{ error() }}</p>
+    </div>
+    }
+
+    <!-- PROFILE CONTENT -->
+    @if (profile() && !isLoading()) {
+    <div class="space-y-4">
+
+        <!-- MAIN PROFILE CARD -->
+        <div class="bg-white rounded-xl shadow-md border border-slate-100 overflow-hidden">
+
+            <!-- HEADER CARD WITH GRADIENT & DECORATIONS -->
+            <div class="relative bg-gradient-to-br from-blue-600 via-blue-500 to-indigo-600 px-6 py-6 overflow-hidden">
+                <!-- Decorative Circles -->
+                <div class="absolute -top-16 -right-16 w-48 h-48 bg-white/10 rounded-full blur-xl"></div>
+                <div class="absolute -bottom-20 -left-20 w-56 h-56 bg-blue-400/20 rounded-full blur-2xl"></div>
+
+                <!-- Pattern Overlay -->
+                <div class="absolute inset-0 opacity-10"
+                    style="background-image: url('data:image/svg+xml,%3Csvg width=&quot;40&quot; height=&quot;40&quot; viewBox=&quot;0 0 40 40&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;%3E%3Cg fill=&quot;none&quot; fill-rule=&quot;evenodd&quot;%3E%3Cg fill=&quot;%23ffffff&quot; fill-opacity=&quot;0.3&quot;%3E%3Cpath d=&quot;M20 20c0-1.1.9-2 2-2s2 .9 2 2-.9 2-2 2-2-.9-2-2z&quot;/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');">
+                </div>
+
+                <div class="relative flex items-center gap-4">
+                    <!-- Avatar -->
+                    <div
+                        class="w-16 h-16 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-white font-black text-2xl shadow-lg border-2 border-white/30">
+                        {{ profile()!.username[0].toUpperCase() }}
+                    </div>
+
+                    <!-- User Info -->
+                    <div>
+                        <h2 class="text-lg font-bold text-white">{{ profile()!.username }}</h2>
+                        <p class="text-blue-100 text-sm flex items-center gap-1.5">
+                            <span class="material-icons-outlined text-sm">mail</span>
+                            {{ profile()!.email }}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CONTENT -->
+            <div class="p-5">
+
+                <!-- STATUS & ROLES SECTION -->
+                <div class="grid grid-cols-2 gap-4 mb-5">
+                    <!-- Status Card -->
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="material-icons-outlined text-blue-600 text-lg">verified_user</span>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Status</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span [class]="profile()!.isActive 
+                                ? 'bg-green-500' 
+                                : 'bg-red-500'" class="w-2 h-2 rounded-full"></span>
+                            <span class="text-sm font-bold text-slate-800">
+                                {{ profile()!.isActive ? 'Aktif' : 'Tidak Aktif' }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Roles Card -->
+                    <div class="bg-slate-50 rounded-lg p-4 border border-slate-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <span class="material-icons-outlined text-indigo-600 text-lg">badge</span>
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Role</p>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5">
+                            @for (role of profile()!.roles; track role) {
+                            <span
+                                class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-2.5 py-0.5 rounded-full text-xs font-bold">
+                                {{ role }}
+                            </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- INFO GRID -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Username -->
+                    <div
+                        class="bg-white rounded-lg p-3 border border-slate-200 hover:border-blue-200 transition-colors">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Username</p>
+                        <p class="text-slate-800 font-semibold text-sm truncate">{{ profile()!.username }}</p>
+                    </div>
+
+                    <!-- Email -->
+                    <div
+                        class="bg-white rounded-lg p-3 border border-slate-200 hover:border-blue-200 transition-colors">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Email</p>
+                        <p class="text-slate-800 font-semibold text-sm truncate">{{ profile()!.email }}</p>
+                    </div>
+
+                    <!-- Branch Code -->
+                    <div
+                        class="bg-white rounded-lg p-3 border border-slate-200 hover:border-blue-200 transition-colors">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kode Cabang</p>
+                        <p class="text-slate-800 font-semibold text-sm">{{ profile()!.branchCode || '-' }}</p>
+                    </div>
+
+                    <!-- Account ID -->
+                    <div
+                        class="bg-white rounded-lg p-3 border border-slate-200 hover:border-blue-200 transition-colors">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">ID Akun</p>
+                        <p class="text-slate-800 font-semibold text-sm">#{{ profile()!.id }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ACTION CARD -->
+        <div class="bg-gradient-to-r from-slate-800 to-slate-900 rounded-xl p-5 shadow-lg overflow-hidden relative">
+            <!-- Decorative -->
+            <div class="absolute -top-8 -right-8 w-28 h-28 bg-blue-500/10 rounded-full blur-xl"></div>
+
+            <div class="relative flex items-center gap-4">
+                <div class="flex-1">
+                    <h3 class="text-sm font-bold text-white mb-1">Keamanan Akun</h3>
+                    <p class="text-slate-400 text-xs">Ganti password secara berkala untuk menjaga keamanan.</p>
+                </div>
+                <button (click)="onChangePassword()"
+                    class="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-2.5 px-5 rounded-lg transition-all text-sm shadow-md hover:shadow-lg">
+                    <span class="material-icons-outlined text-lg">lock</span>
+                    Ganti Password
+                </button>
+            </div>
+        </div>
+    </div>
+    }
+</div>
+
+<!-- CHANGE PASSWORD MODAL - Consistent with Create User Modal -->
+@if (showPasswordModal()) {
+<div class="modal-overlay">
+    <div class="modal-container">
+        <div class="modal-header">
+            <h3>Ganti Password</h3>
+            <button class="btn-close" (click)="closePasswordModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <!-- Error Alert -->
+            @if (passwordError()) {
+            <div class="error-alert">
+                <span class="material-icons-outlined">error</span>
+                <span>{{ passwordError() }}</span>
+            </div>
+            }
+
+            <form (ngSubmit)="submitChangePassword()">
+                <div class="form-group">
+                    <label>Password Lama <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <input [type]="showCurrentPassword() ? 'text' : 'password'" [(ngModel)]="currentPassword"
+                            name="currentPassword" placeholder="Masukkan password lama"
+                            [class.error]="getFieldError('currentPassword')">
+                        <button type="button" class="toggle-password" (click)="toggleCurrentPassword()">
+                            <span class="material-icons-outlined">
+                                {{ showCurrentPassword() ? 'visibility_off' : 'visibility' }}
+                            </span>
+                        </button>
+                    </div>
+                    @if (getFieldError('currentPassword')) {
+                    <span class="error-text">{{ getFieldError('currentPassword') }}</span>
+                    }
+                </div>
+
+                <div class="form-group">
+                    <label>Password Baru <span class="required">*</span></label>
+                    <div class="input-wrapper">
+                        <input [type]="showNewPassword() ? 'text' : 'password'" [(ngModel)]="newPassword"
+                            name="newPassword" placeholder="Masukkan password baru"
+                            [class.error]="getFieldError('newPassword')">
+                        <button type="button" class="toggle-password" (click)="toggleNewPassword()">
+                            <span class="material-icons-outlined">
+                                {{ showNewPassword() ? 'visibility_off' : 'visibility' }}
+                            </span>
+                        </button>
+                    </div>
+                    @if (getFieldError('newPassword')) {
+                    <span class="error-text">{{ getFieldError('newPassword') }}</span>
+                    } @else {
+                    <span class="hint-text">Minimal 8 karakter, huruf besar, kecil, angka & simbol</span>
+                    }
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" (click)="closePasswordModal()">Batal</button>
+                    <button type="submit" class="btn-primary" [disabled]="isChangingPassword()">
+                        @if (isChangingPassword()) {
+                        <span class="spinner-small"></span> Menyimpan...
+                        } @else {
+                        Simpan Password
+                        }
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+}
+
+<!-- SUCCESS TOAST - Top Right like User Update -->
+@if (passwordSuccess()) {
+<div class="success-toast">
+    <span class="material-icons-outlined">check_circle</span>
+    <span>{{ passwordSuccess() }}</span>
+</div>
+}

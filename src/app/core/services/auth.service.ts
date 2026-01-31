@@ -8,6 +8,7 @@ import { Observable, tap } from 'rxjs';
 import { UserRole } from '../models/user-role.enum';
 import { UserState } from '../models/user-state.model';
 import { LoginRequestDTO } from '../models/request/login-request.model';
+import { ChangePasswordRequestDTO } from '../models/request/change-password-request.model';
 import { ApiResponse } from '../models/response/api-response.model';
 import { LoginData } from '../models/response/login-response.model';
 import { StorageUtil } from '../utils/storage-util';
@@ -203,5 +204,14 @@ export class AuthService {
      */
     hasRefreshToken(): boolean {
         return !!this.userState().refreshToken;
+    }
+
+    /**
+     * GANTI PASSWORD
+     * Memanggil API untuk mengganti password user yang sedang login.
+     * @param request DTO berisi currentPassword dan newPassword
+     */
+    changePassword(request: ChangePasswordRequestDTO): Observable<ApiResponse<null>> {
+        return this.http.post<ApiResponse<null>>(`${this.API_URL}/change-password`, request);
     }
 }

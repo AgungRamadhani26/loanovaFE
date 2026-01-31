@@ -9,6 +9,7 @@ import { BranchListComponent } from './features/branches/branch-list.component';
 import { PlafondListComponent } from './features/plafonds/plafond-list.component';
 import { RoleListComponent } from './features/roles/role-list.component';
 import { UserPlafondListComponent } from './features/user-plafond/user-plafond-list.component';
+import { MyProfileComponent } from './features/profile/my-profile.component';
 import { authGuard } from './core/guards/auth.guard';
 
 /**
@@ -53,6 +54,7 @@ export const routes: Routes = [
             { path: 'history', component: DashboardComponent },
             { path: 'plafond', component: PlafondListComponent },
             { path: 'user-plafonds', component: UserPlafondListComponent },
+            { path: 'profile', component: MyProfileComponent },
         ]
     },
 
