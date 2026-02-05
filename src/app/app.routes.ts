@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { LandingPageComponent } from './features/landing-page/landing-page.component';
 import { LoginComponent } from './features/auth/login/login.component';
+import { ForgotPasswordComponent } from './features/auth/forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './features/auth/reset-password/reset-password.component';
 import { MainLayoutComponent } from './layout/shared/main-layout.component';
 import { AdminLayoutComponent } from './layout/admin/admin-layout/admin-layout.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
@@ -31,6 +33,8 @@ export const routes: Routes = [
 
     // 🔑 AUTH AREA
     { path: 'auth/login', component: LoginComponent },
+    { path: 'auth/forgot-password', component: ForgotPasswordComponent },
+    { path: 'reset-password', component: ResetPasswordComponent }, // URL dari email backend
     // Redirect /login ke /auth/login biar rapi
     { path: 'login', redirectTo: 'auth/login', pathMatch: 'full' },
 

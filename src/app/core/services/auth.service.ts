@@ -9,6 +9,8 @@ import { UserRole } from '../models/user-role.enum';
 import { UserState } from '../models/user-state.model';
 import { LoginRequestDTO } from '../models/request/login-request.model';
 import { ChangePasswordRequestDTO } from '../models/request/change-password-request.model';
+import { ForgotPasswordRequestDTO } from '../models/request/forgot-password-request.model';
+import { ResetPasswordRequestDTO } from '../models/request/reset-password-request.model';
 import { ApiResponse } from '../models/response/api-response.model';
 import { LoginData } from '../models/response/login-response.model';
 import { StorageUtil } from '../utils/storage-util';
@@ -213,5 +215,23 @@ export class AuthService {
      */
     changePassword(request: ChangePasswordRequestDTO): Observable<ApiResponse<null>> {
         return this.http.post<ApiResponse<null>>(`${this.API_URL}/change-password`, request);
+    }
+
+    /**
+     * LUPA PASSWORD
+     * Mengirim request ke backend untuk mengirimkan email reset password.
+     * @param request DTO berisi email user
+     */
+    forgotPassword(request: ForgotPasswordRequestDTO): Observable<ApiResponse<null>> {
+        return this.http.post<ApiResponse<null>>(`${this.API_URL}/forgot-password`, request);
+    }
+
+    /**
+     * RESET PASSWORD
+     * Mengirim request ke backend untuk mengubah password dengan token dari email.
+     * @param request DTO berisi token dan newPassword
+     */
+    resetPassword(request: ResetPasswordRequestDTO): Observable<ApiResponse<null>> {
+        return this.http.post<ApiResponse<null>>(`${this.API_URL}/reset-password`, request);
     }
 }
