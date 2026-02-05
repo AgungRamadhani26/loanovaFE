@@ -24,58 +24,57 @@ export class SidebarComponent {
 
     /**
      * DAFTAR SELURUH MENU (MASTER DATA)
-     * Sekarang menggunakan 'permissions' bukan 'roles'.
-     * Jika array permissions KOSONG [], artinya menu itu BISA DIAKSES SEMUA USER LOGIN.
+     * Menggunakan MENU:* permissions khusus untuk kontrol visibility sidebar.
+     * Ini terpisah dari data access permissions (READ, CREATE, dll).
      */
     private readonly allMenuItems = [
         {
             label: 'Dashboard',
             path: '/admin/dashboard',
             icon: 'dashboard',
-            permissions: [] // Public (Internal Users)
+            permissions: ['MENU:DASHBOARD']
         },
         {
             label: 'Users',
             path: '/admin/users',
             icon: 'people',
-            permissions: ['USER:READ']
+            permissions: ['MENU:USERS']
         },
         {
             label: 'Branch',
             path: '/admin/branches',
             icon: 'business',
-            permissions: ['BRANCH:READ']
+            permissions: ['MENU:BRANCH']
         },
         {
             label: 'Role Permission',
             path: '/admin/roles',
             icon: 'security',
-            permissions: ['ROLE:READ', 'PERMISSION:READ']
+            permissions: ['MENU:ROLES']
         },
         {
             label: 'Loan Application',
             path: '/admin/loans',
             icon: 'assignment',
-            // Bisa akses jika punya salah satu: Baca Semua, Baca Detail, atau Input (Marketing)
-            permissions: ['LOAN:READ_ALL', 'LOAN:DETAILS', 'LOAN:CREATE']
+            permissions: ['MENU:LOAN']
         },
         {
             label: 'Application History',
             path: '/admin/history',
             icon: 'history',
-            permissions: ['LOAN:HISTORY']
+            permissions: ['MENU:HISTORY']
         },
         {
             label: 'Plafond',
             path: '/admin/plafond',
             icon: 'monetization_on',
-            permissions: ['PLAFOND:READ']
+            permissions: ['MENU:PLAFOND']
         },
         {
             label: 'User Plafond',
             path: '/admin/user-plafonds',
             icon: 'assignment_ind',
-            permissions: ['USER_PLAFOND:READ']
+            permissions: ['MENU:USER_PLAFOND']
         }
     ];
 
