@@ -1,5 +1,5 @@
-import { Component, signal, computed, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, signal, computed, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoanApplicationService } from '../../core/services/loan-application.service';
 import { AuthService } from '../../core/services/auth.service';
@@ -13,15 +13,7 @@ import {
 } from '../../core/models/loan-status.model';
 import { LoanReviewRequest } from '../../core/models/request/loan-review-request.model';
 
-type TabType = 'all' | 'pending' | 'approval' | 'disbursement';
 
-interface Tab {
-    id: TabType;
-    label: string;
-    icon: string;
-    permissions: string[];
-    hasActions: string[]; // Roles that can take action
-}
 
 @Component({
     selector: 'app-loan-list',
@@ -33,13 +25,14 @@ interface Tab {
 export class LoanListComponent implements OnInit {
     private loanService = inject(LoanApplicationService);
     private authService = inject(AuthService);
+    private platformId = inject(PLATFORM_ID);
 
     // State signals
     readonly applications = signal<LoanApplicationData[]>([]);
     readonly isLoading = signal(false);
     readonly error = signal<string | null>(null);
     readonly successMessage = signal<string | null>(null);
-    readonly activeTab = signal<TabType>('all');
+    readonly statusFilter = signal<string>('all');
     readonly searchQuery = signal('');
     readonly currentPage = signal(1);
     readonly pageSize = signal(10);
@@ -58,65 +51,56 @@ export class LoanListComponent implements OnInit {
     readonly userRoles = computed(() => this.authService.user().roles || []);
     readonly userPermissions = computed(() => this.authService.user().permissions || []);
 
-    // Tab definitions
-    readonly tabs: Tab[] = [
-        {
-            id: 'all',
-            label: 'All Applications',
-            icon: 'list_alt',
-            permissions: ['LOAN:READ_ALL'],
-            hasActions: []
-        },
-        {
-            id: 'pending',
-            label: 'Pending Review',
-            icon: 'pending_actions',
-            permissions: ['LOAN:LIST_PENDING_REVIEW'],
-            hasActions: ['MARKETING']
-        },
-        {
-            id: 'approval',
-            label: 'Waiting Approval',
-            icon: 'approval',
-            permissions: ['LOAN:LIST_WAITING_APPROVAL'],
-            hasActions: ['BRANCHMANAGER']
-        },
-        {
-            id: 'disbursement',
-            label: 'Waiting Disbursement',
-            icon: 'payments',
-            permissions: ['LOAN:LIST_WAITING_DISBURSE'],
-            hasActions: ['BACKOFFICE']
-        }
+    // Stats counts by status
+    readonly pendingCount = computed(() =>
+        this.applications().filter(a => a.status === 'PENDING_REVIEW').length
+    );
+    readonly waitingApprovalCount = computed(() =>
+        this.applications().filter(a => a.status === 'WAITING_APPROVAL').length
+    );
+    readonly waitingDisbursementCount = computed(() =>
+        this.applications().filter(a => a.status === 'WAITING_DISBURSEMENT').length
+    );
+    readonly disbursedCount = computed(() =>
+        this.applications().filter(a => a.status === 'DISBURSED').length
+    );
+    readonly rejectedCount = computed(() =>
+        this.applications().filter(a => a.status === 'REJECTED').length
+    );
+
+    // Available status options for filter dropdown
+    readonly statusOptions = [
+        { value: 'all', label: 'All Status' },
+        { value: 'PENDING_REVIEW', label: 'Pending Review' },
+        { value: 'WAITING_APPROVAL', label: 'Waiting Approval' },
+        { value: 'WAITING_DISBURSEMENT', label: 'Waiting Disbursement' },
+        { value: 'DISBURSED', label: 'Disbursed' },
+        { value: 'REJECTED', label: 'Rejected' }
     ];
 
-    // Computed: visible tabs based on permissions
-    readonly visibleTabs = computed(() => {
-        const perms = this.userPermissions();
+    // Check if current user can perform action on a specific application
+    canPerformAction(app: LoanApplicationData): { canReview: boolean; canApprove: boolean; canDisburse: boolean } {
         const roles = this.userRoles();
+        return {
+            canReview: app.status === 'PENDING_REVIEW' && roles.includes(UserRole.MARKETING),
+            canApprove: app.status === 'WAITING_APPROVAL' && roles.includes(UserRole.BRANCHMANAGER),
+            canDisburse: app.status === 'WAITING_DISBURSEMENT' && roles.includes(UserRole.BACKOFFICE)
+        };
+    }
 
-        // SUPERADMIN sees all tabs
-        if (roles.includes(UserRole.SUPERADMIN)) {
-            return this.tabs;
-        }
-
-        return this.tabs.filter(tab =>
-            tab.permissions.some(p => perms.includes(p))
-        );
-    });
-
-    // Check if current user can take action on current tab
-    readonly canTakeAction = computed(() => {
-        const roles = this.userRoles();
-        const currentTab = this.tabs.find(t => t.id === this.activeTab());
-        if (!currentTab) return false;
-        return currentTab.hasActions.some(r => roles.includes(r as UserRole));
-    });
-
-    // Filtered applications based on search
+    // Filtered applications based on search AND status filter
     readonly filteredApplications = computed(() => {
         const query = this.searchQuery().toLowerCase();
-        return this.applications().filter(app =>
+        const status = this.statusFilter();
+
+        // First filter by status
+        let filtered = this.applications();
+        if (status !== 'all') {
+            filtered = filtered.filter(app => app.status === status);
+        }
+
+        // Then apply search filter
+        return filtered.filter(app =>
             app.fullNameSnapshot?.toLowerCase().includes(query) ||
             app.username?.toLowerCase().includes(query) ||
             app.branchCode?.toLowerCase().includes(query) ||
@@ -155,30 +139,17 @@ export class LoanListComponent implements OnInit {
     );
 
     ngOnInit() {
-        this.loadApplications();
+        if (isPlatformBrowser(this.platformId)) {
+            this.loadApplications();
+        }
     }
 
-    // Load applications based on active tab
+    // Load applications - always uses getAllApplications (backend filters by role)
     loadApplications() {
         this.isLoading.set(true);
         this.error.set(null);
 
-        let request$;
-        switch (this.activeTab()) {
-            case 'pending':
-                request$ = this.loanService.getPendingReview();
-                break;
-            case 'approval':
-                request$ = this.loanService.getWaitingApproval();
-                break;
-            case 'disbursement':
-                request$ = this.loanService.getWaitingDisbursement();
-                break;
-            default:
-                request$ = this.loanService.getAllApplications();
-        }
-
-        request$.subscribe({
+        this.loanService.getAllApplications().subscribe({
             next: (response) => {
                 if (response.success) {
                     this.applications.set(response.data || []);
@@ -194,12 +165,11 @@ export class LoanListComponent implements OnInit {
         });
     }
 
-    // Tab switching
-    switchTab(tabId: TabType) {
-        this.activeTab.set(tabId);
+    // Status filter change handler
+    onStatusFilterChange(event: Event) {
+        const select = event.target as HTMLSelectElement;
+        this.statusFilter.set(select.value);
         this.currentPage.set(1);
-        this.searchQuery.set('');
-        this.loadApplications();
     }
 
     // Search handler

@@ -25,8 +25,9 @@
 
     <!-- STATS CARDS -->
     <div class="stats-grid">
+        <!-- Total Applications -->
         <div class="stat-card">
-            <div class="stat-icon bg-blue-100 text-blue-600">
+            <div class="stat-icon" style="background: #dbeafe; color: #2563eb;">
                 <span class="material-icons-outlined">description</span>
             </div>
             <div class="stat-info">
@@ -34,17 +35,64 @@
                 <span class="stat-label">Total Applications</span>
             </div>
         </div>
+
+        <!-- Pending Review -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
+                <span class="material-icons-outlined">hourglass_empty</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ pendingCount() }}</span>
+                <span class="stat-label">Pending Review</span>
+            </div>
+        </div>
+
+        <!-- Waiting Approval -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #e0e7ff; color: #4f46e5;">
+                <span class="material-icons-outlined">schedule</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ waitingApprovalCount() }}</span>
+                <span class="stat-label">Waiting Approval</span>
+            </div>
+        </div>
+
+        <!-- Waiting Disbursement -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">
+                <span class="material-icons-outlined">pending_actions</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ waitingDisbursementCount() }}</span>
+                <span class="stat-label">Waiting Disbursement</span>
+            </div>
+        </div>
+
+        <!-- Disbursed -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #d1fae5; color: #059669;">
+                <span class="material-icons-outlined">check_circle</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ disbursedCount() }}</span>
+                <span class="stat-label">Disbursed</span>
+            </div>
+        </div>
+
+        <!-- Rejected -->
+        <div class="stat-card">
+            <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
+                <span class="material-icons-outlined">cancel</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ rejectedCount() }}</span>
+                <span class="stat-label">Rejected</span>
+            </div>
+        </div>
     </div>
 
-    <!-- TABS -->
-    <div class="tabs-container">
-        @for (tab of visibleTabs(); track tab.id) {
-        <button class="tab-btn" [class.active]="activeTab() === tab.id" (click)="switchTab(tab.id)">
-            <span class="material-icons-outlined">{{ tab.icon }}</span>
-            <span>{{ tab.label }}</span>
-        </button>
-        }
-    </div>
+
 
     <!-- TABLE CARD -->
     <div class="table-card shadow-sm border border-slate-200">
@@ -56,6 +104,11 @@
                     (ngModelChange)="onSearch($event)">
             </div>
             <div class="filter-actions">
+                <select class="status-filter" [value]="statusFilter()" (change)="onStatusFilterChange($event)">
+                    @for (option of statusOptions; track option.value) {
+                    <option [value]="option.value">{{ option.label }}</option>
+                    }
+                </select>
                 <button class="btn-icon" (click)="loadApplications()">
                     <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
                 </button>
@@ -90,6 +143,7 @@
                 <thead>
                     <tr>
                         <th style="width: 50px;">NO</th>
+                        <th style="width: 70px;">ID</th>
                         <th>APPLICANT</th>
                         <th>BRANCH</th>
                         <th>PLAFOND</th>
@@ -105,6 +159,9 @@
                     <tr>
                         <td style="text-align: center; font-weight: 600; color: #64748b;">
                             {{ getRowNumber(i) }}
+                        </td>
+                        <td>
+                            <span class="loan-id">#{{ app.id }}</span>
                         </td>
                         <td>
                             <div class="applicant-info">
@@ -140,26 +197,24 @@
                                     <span class="material-icons-outlined">visibility</span>
                                 </button>
 
-                                <!-- Action buttons based on tab and role -->
-                                @if (canTakeAction()) {
-                                @if (activeTab() === 'pending') {
+                                <!-- Action buttons based on status and role -->
+                                @if (canPerformAction(app).canReview) {
                                 <button class="btn-action btn-proceed" (click)="openActionModal(app, 'review')"
                                     title="Review">
                                     <span class="material-icons-outlined">rate_review</span>
                                 </button>
                                 }
-                                @if (activeTab() === 'approval') {
+                                @if (canPerformAction(app).canApprove) {
                                 <button class="btn-action btn-approve" (click)="openActionModal(app, 'approve')"
                                     title="Approve">
                                     <span class="material-icons-outlined">thumb_up</span>
                                 </button>
                                 }
-                                @if (activeTab() === 'disbursement') {
+                                @if (canPerformAction(app).canDisburse) {
                                 <button class="btn-action btn-disburse" (click)="openActionModal(app, 'disburse')"
                                     title="Disburse">
                                     <span class="material-icons-outlined">payments</span>
                                 </button>
-                                }
                                 }
                             </div>
                         </td>
