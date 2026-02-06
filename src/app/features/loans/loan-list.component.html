@@ -1,0 +1,425 @@
+<div class="loan-management-container">
+    <!-- SUCCESS TOAST -->
+    @if (successMessage()) {
+    <div class="success-toast">
+        <span class="material-icons-outlined">check_circle</span>
+        <span>{{ successMessage() }}</span>
+    </div>
+    }
+
+    <!-- ERROR TOAST -->
+    @if (error()) {
+    <div class="error-toast">
+        <span class="material-icons-outlined">error</span>
+        <span>{{ error() }}</span>
+    </div>
+    }
+
+    <!-- HEADER SECTION -->
+    <div class="header-section">
+        <div class="title-wrapper">
+            <h1 class="page-title">Loan Applications</h1>
+            <p class="page-subtitle">Manage and track all loan applications across the organization.</p>
+        </div>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-100 text-blue-600">
+                <span class="material-icons-outlined">description</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-value">{{ applications().length }}</span>
+                <span class="stat-label">Total Applications</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs-container">
+        @for (tab of visibleTabs(); track tab.id) {
+        <button class="tab-btn" [class.active]="activeTab() === tab.id" (click)="switchTab(tab.id)">
+            <span class="material-icons-outlined">{{ tab.icon }}</span>
+            <span>{{ tab.label }}</span>
+        </button>
+        }
+    </div>
+
+    <!-- TABLE CARD -->
+    <div class="table-card shadow-sm border border-slate-200">
+        <!-- Search & Filter Bar -->
+        <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
+            <div class="search-box">
+                <span class="material-icons-outlined">search</span>
+                <input type="text" placeholder="Search by name, username, branch, status..." [ngModel]="searchQuery()"
+                    (ngModelChange)="onSearch($event)">
+            </div>
+            <div class="filter-actions">
+                <button class="btn-icon" (click)="loadApplications()">
+                    <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABLE CONTENT -->
+        @if (isLoading()) {
+        <!-- LOADING STATE -->
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+        </div>
+        } @else if (filteredApplications().length === 0) {
+        <!-- EMPTY STATE -->
+        <div class="empty-state">
+            <div class="empty-icon">
+                <span class="material-icons-outlined">folder_open</span>
+            </div>
+            <h3 class="empty-title">No Applications Found</h3>
+            <p class="empty-message">
+                @if (searchQuery()) {
+                Try adjusting your search criteria
+                } @else {
+                No loan applications available at the moment
+                }
+            </p>
+        </div>
+        } @else {
+        <!-- DATA TABLE -->
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 50px;">NO</th>
+                        <th>APPLICANT</th>
+                        <th>BRANCH</th>
+                        <th>PLAFOND</th>
+                        <th>AMOUNT</th>
+                        <th>TENOR</th>
+                        <th>STATUS</th>
+                        <th>SUBMITTED</th>
+                        <th style="width: 150px; text-align: center;">ACTIONS</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (app of paginatedApplications(); track app.id; let i = $index) {
+                    <tr>
+                        <td style="text-align: center; font-weight: 600; color: #64748b;">
+                            {{ getRowNumber(i) }}
+                        </td>
+                        <td>
+                            <div class="applicant-info">
+                                <span class="applicant-name">{{ app.fullNameSnapshot }}</span>
+                                <span class="applicant-username">{{ app.username }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="branch-code">{{ app.branchCode }}</span>
+                        </td>
+                        <td>
+                            <span class="plafond-name">{{ app.plafondName }}</span>
+                        </td>
+                        <td>
+                            <span class="amount">{{ formatCurrency(app.amount) }}</span>
+                        </td>
+                        <td>
+                            <span class="tenor">{{ app.tenor }} bln</span>
+                        </td>
+                        <td>
+                            <span class="status-badge" [style.background]="getStatusColor(app.status).bg"
+                                [style.color]="getStatusColor(app.status).text">
+                                {{ getStatusLabel(app.status) }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="date">{{ formatDate(app.submittedAt) }}</span>
+                        </td>
+                        <td>
+                            <div class="action-buttons">
+                                <!-- View Detail -->
+                                <button class="btn-action btn-view" (click)="openDetailModal(app)" title="View Detail">
+                                    <span class="material-icons-outlined">visibility</span>
+                                </button>
+
+                                <!-- Action buttons based on tab and role -->
+                                @if (canTakeAction()) {
+                                @if (activeTab() === 'pending') {
+                                <button class="btn-action btn-proceed" (click)="openActionModal(app, 'review')"
+                                    title="Review">
+                                    <span class="material-icons-outlined">rate_review</span>
+                                </button>
+                                }
+                                @if (activeTab() === 'approval') {
+                                <button class="btn-action btn-approve" (click)="openActionModal(app, 'approve')"
+                                    title="Approve">
+                                    <span class="material-icons-outlined">thumb_up</span>
+                                </button>
+                                }
+                                @if (activeTab() === 'disbursement') {
+                                <button class="btn-action btn-disburse" (click)="openActionModal(app, 'disburse')"
+                                    title="Disburse">
+                                    <span class="material-icons-outlined">payments</span>
+                                </button>
+                                }
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINATION -->
+        <div class="pagination-wrapper">
+            <div class="pagination-info">
+                <span>Showing {{ showingFrom() }} to {{ showingTo() }} of {{ filteredApplications().length }}
+                    entries</span>
+                <select class="page-size-selector" [value]="pageSize()" (change)="onPageSizeChange($event)">
+                    <option value="5">5 per page</option>
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                </select>
+            </div>
+
+            <div class="pagination-controls">
+                <button class="page-btn" [disabled]="currentPage() === 1" (click)="previousPage()">
+                    <span class="material-icons-outlined">chevron_left</span>
+                </button>
+
+                @for (page of pages(); track page) {
+                <button class="page-btn" [class.active]="currentPage() === page" (click)="goToPage(page)">
+                    {{ page }}
+                </button>
+                }
+
+                <button class="page-btn" [disabled]="currentPage() === totalPages()" (click)="nextPage()">
+                    <span class="material-icons-outlined">chevron_right</span>
+                </button>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+
+<!-- DETAIL MODAL -->
+@if (isDetailModalOpen() && selectedApplication()) {
+<div class="modal-overlay" (click)="closeDetailModal()">
+    <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>Application Detail</h3>
+            <button class="btn-close" (click)="closeDetailModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="detail-grid">
+                <!-- Applicant Info -->
+                <div class="detail-section">
+                    <h4 class="section-title">
+                        <span class="material-icons-outlined">person</span>
+                        Applicant Information
+                    </h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Full Name</span>
+                        <span class="detail-value">{{ selectedApplication()!.fullNameSnapshot }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone</span>
+                        <span class="detail-value">{{ selectedApplication()!.phoneNumberSnapshot }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">NIK</span>
+                        <span class="detail-value">{{ selectedApplication()!.nikSnapshot }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Address</span>
+                        <span class="detail-value">{{ selectedApplication()!.userAddressSnapshot }}</span>
+                    </div>
+                </div>
+
+                <!-- Loan Info -->
+                <div class="detail-section">
+                    <h4 class="section-title">
+                        <span class="material-icons-outlined">account_balance</span>
+                        Loan Details
+                    </h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Amount</span>
+                        <span class="detail-value highlight">{{ formatCurrency(selectedApplication()!.amount) }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Tenor</span>
+                        <span class="detail-value">{{ selectedApplication()!.tenor }} months</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Interest Rate</span>
+                        <span class="detail-value">{{ selectedApplication()!.interestRateSnapshot }}%</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Plafond</span>
+                        <span class="detail-value">{{ selectedApplication()!.plafondName }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Branch</span>
+                        <span class="detail-value">{{ selectedApplication()!.branchCode }}</span>
+                    </div>
+                </div>
+
+                <!-- Employment Info -->
+                <div class="detail-section">
+                    <h4 class="section-title">
+                        <span class="material-icons-outlined">work</span>
+                        Employment
+                    </h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Occupation</span>
+                        <span class="detail-value">{{ selectedApplication()!.occupation }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Company</span>
+                        <span class="detail-value">{{ selectedApplication()!.companyName }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Bank Account</span>
+                        <span class="detail-value">{{ selectedApplication()!.rekeningNumber }}</span>
+                    </div>
+                </div>
+
+                <!-- Status -->
+                <div class="detail-section">
+                    <h4 class="section-title">
+                        <span class="material-icons-outlined">info</span>
+                        Status
+                    </h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Current Status</span>
+                        <span class="status-badge" [style.background]="getStatusColor(selectedApplication()!.status).bg"
+                            [style.color]="getStatusColor(selectedApplication()!.status).text">
+                            {{ getStatusLabel(selectedApplication()!.status) }}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Submitted At</span>
+                        <span class="detail-value">{{ formatDate(selectedApplication()!.submittedAt) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Timeline -->
+            <div class="history-section">
+                <h4 class="section-title">
+                    <span class="material-icons-outlined">history</span>
+                    Application History
+                </h4>
+
+                @if (isHistoryLoading()) {
+                <div class="history-loading">
+                    <div class="loading-spinner small"></div>
+                </div>
+                } @else if (applicationHistory().length === 0) {
+                <p class="no-history">No history available</p>
+                } @else {
+                <div class="timeline">
+                    @for (history of applicationHistory(); track history.id) {
+                    <div class="timeline-item">
+                        <div class="timeline-marker" [style.background]="getStatusColor(history.status).bg"
+                            [style.border-color]="getStatusColor(history.status).text">
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-header">
+                                <span class="status-badge small" [style.background]="getStatusColor(history.status).bg"
+                                    [style.color]="getStatusColor(history.status).text">
+                                    {{ getStatusLabel(history.status) }}
+                                </span>
+                                <span class="timeline-date">{{ formatDate(history.createdAt) }}</span>
+                            </div>
+                            <p class="timeline-comment">{{ history.comment }}</p>
+                            <p class="timeline-actor">
+                                <span class="material-icons-outlined">person</span>
+                                {{ history.actionByUsername }} ({{ history.actionByRole }})
+                            </p>
+                        </div>
+                    </div>
+                    }
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+}
+
+<!-- ACTION MODAL -->
+@if (isActionModalOpen() && selectedApplication()) {
+<div class="modal-overlay" (click)="closeActionModal()">
+    <div class="modal-container" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+            <h3>{{ getActionTitle() }}</h3>
+            <button class="btn-close" (click)="closeActionModal()">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+
+        <div class="modal-body">
+            <div class="action-summary">
+                <div class="summary-row">
+                    <span>Applicant:</span>
+                    <strong>{{ selectedApplication()!.fullNameSnapshot }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Amount:</span>
+                    <strong>{{ formatCurrency(selectedApplication()!.amount) }}</strong>
+                </div>
+                <div class="summary-row">
+                    <span>Status:</span>
+                    <span class="status-badge" [style.background]="getStatusColor(selectedApplication()!.status).bg"
+                        [style.color]="getStatusColor(selectedApplication()!.status).text">
+                        {{ getStatusLabel(selectedApplication()!.status) }}
+                    </span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Comment (optional, required for reject)</label>
+                <textarea [(ngModel)]="actionComment" rows="3" placeholder="Add your comment here..."></textarea>
+            </div>
+
+            <div class="action-buttons-modal">
+                <button class="btn-secondary" (click)="closeActionModal()" [disabled]="isSubmitting()">
+                    Cancel
+                </button>
+                <button class="btn-danger" (click)="submitAction('REJECT')" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-small"></span>
+                    }
+                    Reject
+                </button>
+                @if (actionType() === 'review') {
+                <button class="btn-primary" (click)="submitAction('PROCEED')" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-small"></span>
+                    }
+                    Proceed
+                </button>
+                } @else if (actionType() === 'approve') {
+                <button class="btn-primary" (click)="submitAction('APPROVE')" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-small"></span>
+                    }
+                    Approve
+                </button>
+                } @else if (actionType() === 'disburse') {
+                <button class="btn-success" (click)="submitAction('APPROVE')" [disabled]="isSubmitting()">
+                    @if (isSubmitting()) {
+                    <span class="spinner-small"></span>
+                    }
+                    Disburse
+                </button>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+}

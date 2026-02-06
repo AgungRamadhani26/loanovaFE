@@ -58,12 +58,7 @@ export class SidebarComponent {
             icon: 'assignment',
             permissions: ['MENU:LOAN']
         },
-        {
-            label: 'Application History',
-            path: '/admin/history',
-            icon: 'history',
-            permissions: ['MENU:HISTORY']
-        },
+
         {
             label: 'Plafond',
             path: '/admin/plafond',
