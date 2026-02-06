@@ -1,0 +1,18 @@
+import { Pipe, PipeTransform } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+
+/**
+ * Pipe untuk sanitize URL agar bisa digunakan di iframe src
+ * Dibutuhkan untuk embed Google Maps
+ */
+@Pipe({
+    name: 'safeUrl',
+    standalone: true
+})
+export class SafeUrlPipe implements PipeTransform {
+    constructor(private sanitizer: DomSanitizer) { }
+
+    transform(url: string): SafeResourceUrl {
+        return this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    }
+}

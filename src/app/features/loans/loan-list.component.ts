@@ -5,11 +5,12 @@ import { LoanApplicationService } from '../../core/services/loan-application.ser
 import { AuthService } from '../../core/services/auth.service';
 import { LoanApplicationData } from '../../core/models/response/loan-application-response.model';
 import { ApplicationHistoryData } from '../../core/models/response/application-history-response.model';
+import { SafeUrlPipe } from '../../shared/pipes/safe-url.pipe';
 
 @Component({
     selector: 'app-loan-list',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, SafeUrlPipe],
     templateUrl: './loan-list.component.html',
     styleUrls: ['./loan-list.component.css']
 })
@@ -36,6 +37,7 @@ export class LoanListComponent implements OnInit {
     readonly selectedApplication = signal<LoanApplicationData | null>(null);
     readonly applicationHistory = signal<ApplicationHistoryData[]>([]);
     readonly isHistoryLoading = signal(false);
+    readonly isDetailLoading = signal(false);
     readonly actionType = signal<'review' | 'approve' | 'disburse' | null>(null);
     actionComment = '';
     readonly isSubmitting = signal(false);
@@ -248,17 +250,36 @@ export class LoanListComponent implements OnInit {
         return (this.currentPage() - 1) * this.pageSize() + index + 1;
     }
 
-    // Detail Modal
+    // Detail Modal - now calls API for fresh data
     openDetailModal(app: LoanApplicationData) {
-        this.selectedApplication.set(app);
         this.isDetailModalOpen.set(true);
-        this.loadApplicationHistory(app.id);
+        this.isDetailLoading.set(true);
+        this.error.set(null);
+
+        // Call API to get fresh detail data
+        this.loanService.getApplicationDetail(app.id).subscribe({
+            next: (response) => {
+                if (response.success && response.data) {
+                    this.selectedApplication.set(response.data);
+                    // Load history after detail is loaded
+                    this.loadApplicationHistory(app.id);
+                } else {
+                    this.error.set(response.message || 'Gagal memuat detail aplikasi');
+                    this.isDetailLoading.set(false);
+                }
+            },
+            error: (err) => {
+                this.error.set(err.error?.message || 'Terjadi kesalahan saat memuat detail');
+                this.isDetailLoading.set(false);
+            }
+        });
     }
 
     closeDetailModal() {
         this.isDetailModalOpen.set(false);
         this.selectedApplication.set(null);
         this.applicationHistory.set([]);
+        this.isDetailLoading.set(false);
     }
 
     loadApplicationHistory(appId: number) {
@@ -269,9 +290,11 @@ export class LoanListComponent implements OnInit {
                     this.applicationHistory.set(response.data || []);
                 }
                 this.isHistoryLoading.set(false);
+                this.isDetailLoading.set(false);
             },
             error: () => {
                 this.isHistoryLoading.set(false);
+                this.isDetailLoading.set(false);
             }
         });
     }
@@ -398,5 +421,43 @@ export class LoanListComponent implements OnInit {
             'REJECTED': 'Rejected'
         };
         return labels[status] || status;
+    }
+
+    // Generate Google Maps embed URL
+    // Generate Google Maps embed URL
+    getGoogleMapsUrl(lat: number, lng: number): string {
+        // Menggunakan format query sederhana agar marker merah muncul tepat di koordinat
+        return `https://maps.google.com/maps?q=${lat},${lng}&hl=id&z=15&output=embed`;
+    }
+
+    // Helper to resolve image URL from backend
+    getImageUrl(path: string | undefined): string {
+        if (!path) return 'assets/images/placeholder-document.png'; // Fallback
+        if (path.startsWith('http')) return path;
+
+        // Clean path if it starts with / or \
+        const cleanPath = path.replace(/^[/\\]+/, '');
+        // Backend serves uploads at /uploads/**
+        // Jika path sudah mengandung 'uploads/', kita sesuaikan
+        // Namun biasanya path di database disimpan relatif 'uploads/dir/file.jpg' atau 'dir/file.jpg'
+
+        // Asumsi base URL backend port 9091
+        const BACKEND_URL = 'http://localhost:9091';
+
+        // Cek apakah path sudah include 'uploads' di depannya
+        if (cleanPath.startsWith('uploads')) {
+            return `${BACKEND_URL}/${cleanPath}`;
+        }
+
+        // Jika tidak, tambahkan uploads/ (asumsi default folder)
+        return `${BACKEND_URL}/uploads/${cleanPath}`;
+    }
+
+    // Open image in new tab for preview
+    openImagePreview(imageUrl: string) {
+        if (isPlatformBrowser(this.platformId)) {
+            const fullUrl = this.getImageUrl(imageUrl);
+            window.open(fullUrl, '_blank');
+        }
     }
 }
