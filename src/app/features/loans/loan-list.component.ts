@@ -453,11 +453,34 @@ export class LoanListComponent implements OnInit {
         return `${BACKEND_URL}/uploads/${cleanPath}`;
     }
 
-    // Open image in new tab for preview
+
+    // Image Preview Modal State
+    readonly previewImageUrl = signal<string | null>(null);
+
+    // Open image in popup modal
     openImagePreview(imageUrl: string) {
-        if (isPlatformBrowser(this.platformId)) {
-            const fullUrl = this.getImageUrl(imageUrl);
-            window.open(fullUrl, '_blank');
-        }
+        const fullUrl = this.getImageUrl(imageUrl);
+        this.previewImageUrl.set(fullUrl);
+    }
+
+    closeImagePreview() {
+        this.previewImageUrl.set(null);
+    }
+
+    // Calculation Helpers
+    // Asumsi: Interest Rate adalah Bunga Flat per Bulan sesuai request user
+    calculateTotalInterest(amount: number, rate: number, tenor: number): number {
+        return amount * (rate / 100) * tenor;
+    }
+
+    calculateTotalRepayment(amount: number, rate: number, tenor: number): number {
+        const totalInterest = this.calculateTotalInterest(amount, rate, tenor);
+        return amount + totalInterest;
+    }
+
+    calculateMonthlyInstallment(amount: number, rate: number, tenor: number): number {
+        if (tenor === 0) return 0;
+        const totalRepayment = this.calculateTotalRepayment(amount, rate, tenor);
+        return totalRepayment / tenor;
     }
 }
