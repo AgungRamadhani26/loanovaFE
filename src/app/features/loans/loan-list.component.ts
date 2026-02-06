@@ -3,17 +3,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LoanApplicationService } from '../../core/services/loan-application.service';
 import { AuthService } from '../../core/services/auth.service';
-import { UserRole } from '../../core/models/user-role.enum';
 import { LoanApplicationData } from '../../core/models/response/loan-application-response.model';
 import { ApplicationHistoryData } from '../../core/models/response/application-history-response.model';
-import {
-    LoanStatus,
-    STATUS_LABELS,
-    STATUS_COLORS
-} from '../../core/models/loan-status.model';
-import { LoanReviewRequest } from '../../core/models/request/loan-review-request.model';
-
-
 
 @Component({
     selector: 'app-loan-list',
@@ -32,10 +23,12 @@ export class LoanListComponent implements OnInit {
     readonly isLoading = signal(false);
     readonly error = signal<string | null>(null);
     readonly successMessage = signal<string | null>(null);
-    readonly statusFilter = signal<string>('all');
     readonly searchQuery = signal('');
     readonly currentPage = signal(1);
     readonly pageSize = signal(10);
+
+    // View mode: 'all' = semua aplikasi, 'actionable' = hanya yang perlu diaksi
+    readonly viewMode = signal<'all' | 'actionable'>('all');
 
     // Modal states
     readonly isDetailModalOpen = signal(false);
@@ -44,7 +37,7 @@ export class LoanListComponent implements OnInit {
     readonly applicationHistory = signal<ApplicationHistoryData[]>([]);
     readonly isHistoryLoading = signal(false);
     readonly actionType = signal<'review' | 'approve' | 'disburse' | null>(null);
-    readonly actionComment = signal('');
+    actionComment = '';
     readonly isSubmitting = signal(false);
 
     // User info
@@ -68,50 +61,59 @@ export class LoanListComponent implements OnInit {
         this.applications().filter(a => a.status === 'REJECTED').length
     );
 
-    // Available status options for filter dropdown
-    readonly statusOptions = [
-        { value: 'all', label: 'All Status' },
-        { value: 'PENDING_REVIEW', label: 'Pending Review' },
-        { value: 'WAITING_APPROVAL', label: 'Waiting Approval' },
-        { value: 'WAITING_DISBURSEMENT', label: 'Waiting Disbursement' },
-        { value: 'DISBURSED', label: 'Disbursed' },
-        { value: 'REJECTED', label: 'Rejected' }
-    ];
+    // Role checks for action button
+    readonly isMarketing = computed(() => this.userRoles().some(r => r === 'MARKETING'));
+    readonly isBranchManager = computed(() => this.userRoles().some(r => r === 'BRANCHMANAGER'));
+    readonly isBackoffice = computed(() => this.userRoles().some(r => r === 'BACKOFFICE'));
+    readonly isSuperAdmin = computed(() => this.userRoles().some(r => r === 'SUPERADMIN'));
 
-    // Check if current user can perform action on a specific application
-    canPerformAction(app: LoanApplicationData): { canReview: boolean; canApprove: boolean; canDisburse: boolean } {
-        const roles = this.userRoles();
-        return {
-            canReview: app.status === 'PENDING_REVIEW' && roles.includes(UserRole.MARKETING),
-            canApprove: app.status === 'WAITING_APPROVAL' && roles.includes(UserRole.BRANCHMANAGER),
-            canDisburse: app.status === 'WAITING_DISBURSEMENT' && roles.includes(UserRole.BACKOFFICE)
-        };
-    }
-
-    // Filtered applications based on search AND status filter
-    readonly filteredApplications = computed(() => {
-        const query = this.searchQuery().toLowerCase();
-        const status = this.statusFilter();
-
-        // First filter by status
-        let filtered = this.applications();
-        if (status !== 'all') {
-            filtered = filtered.filter(app => app.status === status);
-        }
-
-        // Then apply search filter
-        return filtered.filter(app =>
-            app.fullNameSnapshot?.toLowerCase().includes(query) ||
-            app.username?.toLowerCase().includes(query) ||
-            app.branchCode?.toLowerCase().includes(query) ||
-            app.status?.toLowerCase().includes(query) ||
-            app.plafondName?.toLowerCase().includes(query)
-        );
+    // Get action button label based on role
+    readonly actionButtonLabel = computed(() => {
+        if (this.isMarketing()) return 'Lihat Pending Review';
+        if (this.isBranchManager()) return 'Lihat Waiting Approval';
+        if (this.isBackoffice()) return 'Lihat Waiting Disbursement';
+        return null;
     });
 
-    // Pagination computed
+    // Show action button only for non-superadmin roles with specific permissions
+    readonly showActionButton = computed(() => {
+        return this.isMarketing() || this.isBranchManager() || this.isBackoffice();
+    });
+
+    // Filtered applications based on search - searches all columns
+    readonly filteredApplications = computed(() => {
+        const query = this.searchQuery().toLowerCase().trim();
+        let results = this.applications();
+
+        if (query) {
+            results = results.filter(app => {
+                // Build search string from all relevant fields
+                const searchStr = [
+                    app.id?.toString(),
+                    app.fullNameSnapshot,
+                    app.username,
+                    app.branchCode,
+                    app.plafondName,
+                    app.amount?.toString(),
+                    app.tenor?.toString(),
+                    app.status,
+                    app.submittedAt,
+                    app.occupation,
+                    app.companyName,
+                    app.nikSnapshot,
+                    app.phoneNumberSnapshot,
+                    app.rekeningNumber
+                ].filter(Boolean).join(' ').toLowerCase();
+
+                return searchStr.includes(query);
+            });
+        }
+
+        return results;
+    });
+
     readonly totalPages = computed(() =>
-        Math.ceil(this.filteredApplications().length / this.pageSize()) || 1
+        Math.max(1, Math.ceil(this.filteredApplications().length / this.pageSize()))
     );
 
     readonly paginatedApplications = computed(() => {
@@ -138,16 +140,30 @@ export class LoanListComponent implements OnInit {
         Math.min(this.currentPage() * this.pageSize(), this.filteredApplications().length)
     );
 
+    // Check what action can be performed on an application
+    canPerformAction(app: LoanApplicationData): { canReview: boolean; canApprove: boolean; canDisburse: boolean } {
+        const hasReviewPermission = this.userPermissions().includes('LOAN:REVIEW');
+        const hasApprovePermission = this.userPermissions().includes('LOAN:APPROVE');
+        const hasDisbursePermission = this.userPermissions().includes('LOAN:DISBURSE');
+
+        return {
+            canReview: hasReviewPermission && app.status === 'PENDING_REVIEW',
+            canApprove: hasApprovePermission && app.status === 'WAITING_APPROVAL',
+            canDisburse: hasDisbursePermission && app.status === 'WAITING_DISBURSEMENT'
+        };
+    }
+
     ngOnInit() {
         if (isPlatformBrowser(this.platformId)) {
             this.loadApplications();
         }
     }
 
-    // Load applications - always uses getAllApplications (backend filters by role)
+    // Load all applications
     loadApplications() {
         this.isLoading.set(true);
         this.error.set(null);
+        this.viewMode.set('all');
 
         this.loanService.getAllApplications().subscribe({
             next: (response) => {
@@ -165,11 +181,38 @@ export class LoanListComponent implements OnInit {
         });
     }
 
-    // Status filter change handler
-    onStatusFilterChange(event: Event) {
-        const select = event.target as HTMLSelectElement;
-        this.statusFilter.set(select.value);
-        this.currentPage.set(1);
+    // Load actionable applications based on role
+    loadActionableApplications() {
+        this.isLoading.set(true);
+        this.error.set(null);
+        this.viewMode.set('actionable');
+
+        let apiCall;
+        if (this.isMarketing()) {
+            apiCall = this.loanService.getPendingReview();
+        } else if (this.isBranchManager()) {
+            apiCall = this.loanService.getWaitingApproval();
+        } else if (this.isBackoffice()) {
+            apiCall = this.loanService.getWaitingDisbursement();
+        } else {
+            this.isLoading.set(false);
+            return;
+        }
+
+        apiCall.subscribe({
+            next: (response) => {
+                if (response.success) {
+                    this.applications.set(response.data || []);
+                } else {
+                    this.error.set(response.message || 'Gagal memuat data');
+                }
+                this.isLoading.set(false);
+            },
+            error: (err) => {
+                this.error.set(err.error?.message || 'Terjadi kesalahan');
+                this.isLoading.set(false);
+            }
+        });
     }
 
     // Search handler
@@ -205,41 +248,11 @@ export class LoanListComponent implements OnInit {
         return (this.currentPage() - 1) * this.pageSize() + index + 1;
     }
 
-    // Status helpers
-    getStatusLabel(status: string): string {
-        return STATUS_LABELS[status as LoanStatus] || status;
-    }
-
-    getStatusColor(status: string): { bg: string; text: string } {
-        return STATUS_COLORS[status as LoanStatus] || { bg: '#f1f5f9', text: '#64748b' };
-    }
-
-    // Format currency
-    formatCurrency(amount: number): string {
-        return new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0
-        }).format(amount);
-    }
-
-    // Format date
-    formatDate(dateStr: string): string {
-        if (!dateStr) return '-';
-        return new Date(dateStr).toLocaleDateString('id-ID', {
-            day: '2-digit',
-            month: 'short',
-            year: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-    }
-
-    // Open detail modal
+    // Detail Modal
     openDetailModal(app: LoanApplicationData) {
         this.selectedApplication.set(app);
         this.isDetailModalOpen.set(true);
-        this.loadHistory(app.id);
+        this.loadApplicationHistory(app.id);
     }
 
     closeDetailModal() {
@@ -248,9 +261,9 @@ export class LoanListComponent implements OnInit {
         this.applicationHistory.set([]);
     }
 
-    loadHistory(id: number) {
+    loadApplicationHistory(appId: number) {
         this.isHistoryLoading.set(true);
-        this.loanService.getApplicationHistory(id).subscribe({
+        this.loanService.getApplicationHistory(appId).subscribe({
             next: (response) => {
                 if (response.success) {
                     this.applicationHistory.set(response.data || []);
@@ -263,51 +276,58 @@ export class LoanListComponent implements OnInit {
         });
     }
 
-    // Action modal
+    // Action Modal
     openActionModal(app: LoanApplicationData, type: 'review' | 'approve' | 'disburse') {
         this.selectedApplication.set(app);
         this.actionType.set(type);
-        this.actionComment.set('');
+        this.actionComment = '';
         this.isActionModalOpen.set(true);
     }
 
     closeActionModal() {
         this.isActionModalOpen.set(false);
         this.actionType.set(null);
-        this.actionComment.set('');
+        this.actionComment = '';
     }
 
-    // Submit action (PROCEED/APPROVE/DISBURSE)
-    submitAction(action: 'PROCEED' | 'APPROVE' | 'REJECT') {
+    getActionTitle(): string {
+        switch (this.actionType()) {
+            case 'review': return 'Review Application';
+            case 'approve': return 'Approve Application';
+            case 'disburse': return 'Disburse Application';
+            default: return 'Action';
+        }
+    }
+
+    submitAction(decision: 'PROCEED' | 'APPROVE' | 'REJECT') {
         const app = this.selectedApplication();
         if (!app) return;
 
-        // Validation: Comment wajib untuk REJECT
-        if (action === 'REJECT' && !this.actionComment().trim()) {
+        if (decision === 'REJECT' && !this.actionComment.trim()) {
             this.error.set('Komentar wajib diisi untuk penolakan');
-            setTimeout(() => this.error.set(null), 3000);
             return;
         }
 
         this.isSubmitting.set(true);
-        const request: LoanReviewRequest = {
-            action,
-            comment: this.actionComment() || undefined
+
+        let apiCall;
+        const request: { action: 'PROCEED' | 'REJECT' | 'APPROVE'; comment?: string } = {
+            action: decision,
+            comment: this.actionComment
         };
 
-        let request$;
         switch (this.actionType()) {
             case 'review':
-                request$ = this.loanService.reviewApplication(app.id, request);
+                apiCall = this.loanService.reviewApplication(app.id, request);
                 break;
             case 'approve':
-                request$ = this.loanService.approveApplication(app.id, request);
+                apiCall = this.loanService.approveApplication(app.id, request);
                 break;
             case 'disburse':
-                if (action === 'REJECT') {
-                    request$ = this.loanService.rejectByBackoffice(app.id, request);
+                if (decision === 'REJECT') {
+                    apiCall = this.loanService.rejectByBackoffice(app.id, request);
                 } else {
-                    request$ = this.loanService.disburseApplication(app.id);
+                    apiCall = this.loanService.disburseApplication(app.id);
                 }
                 break;
             default:
@@ -315,44 +335,68 @@ export class LoanListComponent implements OnInit {
                 return;
         }
 
-        request$.subscribe({
+        apiCall.subscribe({
             next: (response) => {
                 if (response.success) {
-                    this.successMessage.set('Aksi berhasil diproses');
-                    setTimeout(() => this.successMessage.set(null), 3000);
+                    this.successMessage.set(response.message || 'Berhasil!');
                     this.closeActionModal();
-                    this.loadApplications();
+                    // Reload based on current view mode
+                    if (this.viewMode() === 'actionable') {
+                        this.loadActionableApplications();
+                    } else {
+                        this.loadApplications();
+                    }
+                    setTimeout(() => this.successMessage.set(null), 4000);
                 } else {
-                    this.error.set(response.message || 'Gagal memproses aksi');
-                    setTimeout(() => this.error.set(null), 3000);
+                    this.error.set(response.message || 'Gagal melakukan aksi');
                 }
                 this.isSubmitting.set(false);
             },
             error: (err) => {
                 this.error.set(err.error?.message || 'Terjadi kesalahan');
-                setTimeout(() => this.error.set(null), 3000);
                 this.isSubmitting.set(false);
             }
         });
     }
 
-    // Get action button label
-    getActionLabel(): string {
-        switch (this.actionType()) {
-            case 'review': return 'Proceed';
-            case 'approve': return 'Approve';
-            case 'disburse': return 'Disburse';
-            default: return 'Submit';
-        }
+    // Helper functions
+    formatCurrency(amount: number): string {
+        return new Intl.NumberFormat('id-ID', {
+            style: 'currency',
+            currency: 'IDR',
+            minimumFractionDigits: 0
+        }).format(amount);
     }
 
-    // Get action modal title
-    getActionTitle(): string {
-        switch (this.actionType()) {
-            case 'review': return 'Review Application';
-            case 'approve': return 'Approve Application';
-            case 'disburse': return 'Disburse Loan';
-            default: return 'Process Application';
-        }
+    formatDate(dateString: string): string {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    getStatusColor(status: string): { bg: string; text: string } {
+        const colors: Record<string, { bg: string; text: string }> = {
+            'PENDING_REVIEW': { bg: '#fef3c7', text: '#b45309' },
+            'WAITING_APPROVAL': { bg: '#e0e7ff', text: '#4338ca' },
+            'WAITING_DISBURSEMENT': { bg: '#ede9fe', text: '#6d28d9' },
+            'DISBURSED': { bg: '#d1fae5', text: '#047857' },
+            'REJECTED': { bg: '#fee2e2', text: '#b91c1c' }
+        };
+        return colors[status] || { bg: '#f1f5f9', text: '#475569' };
+    }
+
+    getStatusLabel(status: string): string {
+        const labels: Record<string, string> = {
+            'PENDING_REVIEW': 'Pending Review',
+            'WAITING_APPROVAL': 'Waiting Approval',
+            'WAITING_DISBURSEMENT': 'Waiting Disbursement',
+            'DISBURSED': 'Disbursed',
+            'REJECTED': 'Rejected'
+        };
+        return labels[status] || status;
     }
 }

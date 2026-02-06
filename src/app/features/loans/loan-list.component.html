@@ -23,20 +23,19 @@
         </div>
     </div>
 
-    <!-- STATS CARDS -->
+    <!-- STATS CARDS (only show in 'all' mode) -->
+    @if (viewMode() === 'all') {
     <div class="stats-grid">
-        <!-- Total Applications -->
         <div class="stat-card">
             <div class="stat-icon" style="background: #dbeafe; color: #2563eb;">
                 <span class="material-icons-outlined">description</span>
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ applications().length }}</span>
-                <span class="stat-label">Total Applications</span>
+                <span class="stat-label">Total</span>
             </div>
         </div>
 
-        <!-- Pending Review -->
         <div class="stat-card">
             <div class="stat-icon" style="background: #fef3c7; color: #d97706;">
                 <span class="material-icons-outlined">hourglass_empty</span>
@@ -47,7 +46,6 @@
             </div>
         </div>
 
-        <!-- Waiting Approval -->
         <div class="stat-card">
             <div class="stat-icon" style="background: #e0e7ff; color: #4f46e5;">
                 <span class="material-icons-outlined">schedule</span>
@@ -58,7 +56,6 @@
             </div>
         </div>
 
-        <!-- Waiting Disbursement -->
         <div class="stat-card">
             <div class="stat-icon" style="background: #ede9fe; color: #7c3aed;">
                 <span class="material-icons-outlined">pending_actions</span>
@@ -69,7 +66,6 @@
             </div>
         </div>
 
-        <!-- Disbursed -->
         <div class="stat-card">
             <div class="stat-icon" style="background: #d1fae5; color: #059669;">
                 <span class="material-icons-outlined">check_circle</span>
@@ -80,7 +76,6 @@
             </div>
         </div>
 
-        <!-- Rejected -->
         <div class="stat-card">
             <div class="stat-icon" style="background: #fee2e2; color: #dc2626;">
                 <span class="material-icons-outlined">cancel</span>
@@ -91,8 +86,7 @@
             </div>
         </div>
     </div>
-
-
+    }
 
     <!-- TABLE CARD -->
     <div class="table-card shadow-sm border border-slate-200">
@@ -104,25 +98,43 @@
                     (ngModelChange)="onSearch($event)">
             </div>
             <div class="filter-actions">
-                <select class="status-filter" [value]="statusFilter()" (change)="onStatusFilterChange($event)">
-                    @for (option of statusOptions; track option.value) {
-                    <option [value]="option.value">{{ option.label }}</option>
-                    }
-                </select>
+                <!-- Role-based Action Button -->
+                @if (showActionButton()) {
+                <button class="btn-action-role" [class.active]="viewMode() === 'actionable'"
+                    (click)="loadActionableApplications()">
+                    <span class="material-icons-outlined">assignment</span>
+                    <span>{{ actionButtonLabel() }}</span>
+                </button>
+                }
+
+                <!-- View All Button (shown when in actionable mode) -->
+                @if (viewMode() === 'actionable') {
+                <button class="btn-view-all" (click)="loadApplications()">
+                    <span class="material-icons-outlined">list</span>
+                    <span>Lihat Semua</span>
+                </button>
+                }
+
                 <button class="btn-icon" (click)="loadApplications()">
                     <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
                 </button>
             </div>
         </div>
 
+        <!-- VIEW MODE INDICATOR -->
+        @if (viewMode() === 'actionable') {
+        <div class="view-mode-indicator">
+            <span class="material-icons-outlined">info</span>
+            <span>Menampilkan: {{ actionButtonLabel() }} ({{ applications().length }} item)</span>
+        </div>
+        }
+
         <!-- TABLE CONTENT -->
         @if (isLoading()) {
-        <!-- LOADING STATE -->
         <div class="loading-container">
             <div class="loading-spinner"></div>
         </div>
         } @else if (filteredApplications().length === 0) {
-        <!-- EMPTY STATE -->
         <div class="empty-state">
             <div class="empty-icon">
                 <span class="material-icons-outlined">folder_open</span>
@@ -137,7 +149,6 @@
             </p>
         </div>
         } @else {
-        <!-- DATA TABLE -->
         <div class="table-wrapper">
             <table>
                 <thead>
@@ -151,7 +162,7 @@
                         <th>TENOR</th>
                         <th>STATUS</th>
                         <th>SUBMITTED</th>
-                        <th style="width: 150px; text-align: center;">ACTIONS</th>
+                        <th style="width: 180px; text-align: center;">ACTIONS</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -192,29 +203,35 @@
                         </td>
                         <td>
                             <div class="action-buttons">
-                                <!-- View Detail -->
+                                <!-- View Detail - only in 'all' mode -->
+                                @if (viewMode() === 'all') {
                                 <button class="btn-action btn-view" (click)="openDetailModal(app)" title="View Detail">
                                     <span class="material-icons-outlined">visibility</span>
                                 </button>
+                                }
 
-                                <!-- Action buttons based on status and role -->
+                                <!-- Action buttons only shown in actionable mode -->
+                                @if (viewMode() === 'actionable') {
                                 @if (canPerformAction(app).canReview) {
-                                <button class="btn-action btn-proceed" (click)="openActionModal(app, 'review')"
-                                    title="Review">
+                                <button class="btn-action-labeled btn-review" (click)="openActionModal(app, 'review')">
                                     <span class="material-icons-outlined">rate_review</span>
+                                    <span>Review</span>
                                 </button>
                                 }
                                 @if (canPerformAction(app).canApprove) {
-                                <button class="btn-action btn-approve" (click)="openActionModal(app, 'approve')"
-                                    title="Approve">
+                                <button class="btn-action-labeled btn-approve"
+                                    (click)="openActionModal(app, 'approve')">
                                     <span class="material-icons-outlined">thumb_up</span>
+                                    <span>Approve</span>
                                 </button>
                                 }
                                 @if (canPerformAction(app).canDisburse) {
-                                <button class="btn-action btn-disburse" (click)="openActionModal(app, 'disburse')"
-                                    title="Disburse">
+                                <button class="btn-action-labeled btn-disburse"
+                                    (click)="openActionModal(app, 'disburse')">
                                     <span class="material-icons-outlined">payments</span>
+                                    <span>Disburse</span>
                                 </button>
+                                }
                                 }
                             </div>
                         </td>
@@ -262,7 +279,7 @@
 <div class="modal-overlay" (click)="closeDetailModal()">
     <div class="modal-container modal-lg" (click)="$event.stopPropagation()">
         <div class="modal-header">
-            <h3>Application Detail</h3>
+            <h3>Application Detail #{{ selectedApplication()!.id }}</h3>
             <button class="btn-close" (click)="closeDetailModal()">
                 <span class="material-icons-outlined">close</span>
             </button>
@@ -270,7 +287,6 @@
 
         <div class="modal-body">
             <div class="detail-grid">
-                <!-- Applicant Info -->
                 <div class="detail-section">
                     <h4 class="section-title">
                         <span class="material-icons-outlined">person</span>
@@ -294,7 +310,6 @@
                     </div>
                 </div>
 
-                <!-- Loan Info -->
                 <div class="detail-section">
                     <h4 class="section-title">
                         <span class="material-icons-outlined">account_balance</span>
@@ -322,7 +337,6 @@
                     </div>
                 </div>
 
-                <!-- Employment Info -->
                 <div class="detail-section">
                     <h4 class="section-title">
                         <span class="material-icons-outlined">work</span>
@@ -342,7 +356,6 @@
                     </div>
                 </div>
 
-                <!-- Status -->
                 <div class="detail-section">
                     <h4 class="section-title">
                         <span class="material-icons-outlined">info</span>
