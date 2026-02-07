@@ -33,6 +33,14 @@ export class HeaderComponent {
         return roles.length > 0 ? roles[0] : 'Guest';
     });
 
+    // Current date for display in header
+    readonly currentDate = new Date().toLocaleDateString('id-ID', {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+    });
+
     /**
      * ON LOGOUT
      * Memanggil fungsi logout di service dan mengarahkan ke halaman login.

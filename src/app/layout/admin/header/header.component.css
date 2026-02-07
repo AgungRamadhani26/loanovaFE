@@ -2,6 +2,248 @@
     display: block;
 }
 
+/* HEADER CONTAINER */
+.header-container {
+    height: 60px;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid #e2e8f0;
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 30;
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
+}
+
+@media (min-width: 1024px) {
+    .header-container {
+        left: 256px;
+    }
+}
+
+/* LEFT SIDE */
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.hamburger-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 12px;
+    background: #f1f5f9;
+    color: #64748b;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.hamburger-btn:hover {
+    background: #e2e8f0;
+    color: #1e293b;
+}
+
+@media (min-width: 1024px) {
+    .hamburger-btn {
+        display: none;
+    }
+}
+
+/* DATETIME DISPLAY */
+.datetime-display {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.datetime-display .material-icons-outlined {
+    font-size: 16px;
+    color: #64748b;
+}
+
+.datetime-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #475569;
+}
+
+
+
+/* RIGHT SIDE */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+
+
+/* DIVIDER */
+.header-divider {
+    display: none;
+    width: 1px;
+    height: 32px;
+    background: linear-gradient(180deg, transparent, #e2e8f0, transparent);
+}
+
+@media (min-width: 640px) {
+    .header-divider {
+        display: block;
+    }
+}
+
+/* USER PROFILE AREA */
+.user-profile-area {
+    display: flex;
+    align-items: center;
+}
+
+.profile-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px 6px 6px;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.profile-trigger:hover {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 800;
+    font-size: 1rem;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    transition: transform 0.2s;
+}
+
+.profile-trigger:hover .avatar {
+    transform: scale(1.05);
+}
+
+.profile-info {
+    display: none;
+}
+
+@media (min-width: 768px) {
+    .profile-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.profile-name {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1;
+}
+
+.profile-role {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(0.9);
+    }
+}
+
+.role-text {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #3b82f6;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.chevron {
+    display: none;
+    font-size: 20px !important;
+    color: #94a3b8;
+    transition: transform 0.2s;
+}
+
+@media (min-width: 768px) {
+    .chevron {
+        display: block;
+    }
+}
+
+.profile-trigger:hover .chevron {
+    color: #64748b;
+}
+
+/* LOGOUT BUTTON */
+.logout-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 12px;
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.logout-btn:hover {
+    background: #fef2f2;
+    color: #ef4444;
+    border-color: #fee2e2;
+}
+
+.logout-btn .material-icons-outlined {
+    font-size: 22px;
+}
+
+/* MATERIAL ICONS BASE */
 .material-icons-outlined {
     font-family: 'Material Icons Outlined';
     font-weight: normal;
