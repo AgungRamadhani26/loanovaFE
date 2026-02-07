@@ -18,8 +18,8 @@
     <!-- HEADER SECTION -->
     <div class="header-section">
         <div class="title-wrapper">
-            <h1 class="page-title">Loan Applications</h1>
-            <p class="page-subtitle">Manage and track all loan applications across the organization.</p>
+            <h1 class="page-title">Pengajuan Pinjaman</h1>
+            <p class="page-subtitle">Kelola dan pantau semua pengajuan pinjaman di seluruh organisasi.</p>
         </div>
     </div>
 
@@ -42,7 +42,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ pendingCount() }}</span>
-                <span class="stat-label">Pending Review</span>
+                <span class="stat-label">Menunggu Review</span>
             </div>
         </div>
 
@@ -52,7 +52,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ waitingApprovalCount() }}</span>
-                <span class="stat-label">Waiting Approval</span>
+                <span class="stat-label">Menunggu Persetujuan</span>
             </div>
         </div>
 
@@ -62,7 +62,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ waitingDisbursementCount() }}</span>
-                <span class="stat-label">Waiting Disbursement</span>
+                <span class="stat-label">Menunggu Pencairan</span>
             </div>
         </div>
 
@@ -72,7 +72,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ disbursedCount() }}</span>
-                <span class="stat-label">Disbursed</span>
+                <span class="stat-label">Dicairkan</span>
             </div>
         </div>
 
@@ -82,7 +82,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ rejectedCount() }}</span>
-                <span class="stat-label">Rejected</span>
+                <span class="stat-label">Ditolak</span>
             </div>
         </div>
     </div>
@@ -94,7 +94,7 @@
         <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
             <div class="search-box">
                 <span class="material-icons-outlined">search</span>
-                <input type="text" placeholder="Search by name, username, branch, status..." [ngModel]="searchQuery()"
+                <input type="text" placeholder="Cari nama, username, cabang, status..." [ngModel]="searchQuery()"
                     (ngModelChange)="onSearch($event)">
             </div>
             <div class="filter-actions">
@@ -139,12 +139,12 @@
             <div class="empty-icon">
                 <span class="material-icons-outlined">folder_open</span>
             </div>
-            <h3 class="empty-title">No Applications Found</h3>
+            <h3 class="empty-title">Pengajuan Tidak Ditemukan</h3>
             <p class="empty-message">
                 @if (searchQuery()) {
-                Try adjusting your search criteria
+                Coba sesuaikan kriteria pencarian Anda
                 } @else {
-                No loan applications available at the moment
+                Tidak ada pengajuan pinjaman saat ini
                 }
             </p>
         </div>
@@ -155,14 +155,14 @@
                     <tr>
                         <th style="width: 50px;">NO</th>
                         <th style="width: 70px;">ID</th>
-                        <th>APPLICANT</th>
-                        <th>BRANCH</th>
+                        <th>PEMOHON</th>
+                        <th>CABANG</th>
                         <th>PLAFOND</th>
-                        <th>AMOUNT</th>
+                        <th>JUMLAH</th>
                         <th>TENOR</th>
                         <th>STATUS</th>
-                        <th>SUBMITTED</th>
-                        <th style="width: 180px; text-align: center;">ACTIONS</th>
+                        <th>DIAJUKAN</th>
+                        <th style="width: 180px; text-align: center;">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -205,7 +205,7 @@
                             <div class="action-buttons">
                                 <!-- View Detail - only in 'all' mode -->
                                 @if (viewMode() === 'all') {
-                                <button class="btn-action btn-view" (click)="openDetailModal(app)" title="View Detail">
+                                <button class="btn-action btn-view" (click)="openDetailModal(app)" title="Lihat Detail">
                                     <span class="material-icons-outlined">visibility</span>
                                 </button>
                                 }
@@ -222,14 +222,14 @@
                                 <button class="btn-action-labeled btn-approve"
                                     (click)="openActionModal(app, 'approve')">
                                     <span class="material-icons-outlined">thumb_up</span>
-                                    <span>Approve</span>
+                                    <span>Setujui</span>
                                 </button>
                                 }
                                 @if (canPerformAction(app).canDisburse) {
                                 <button class="btn-action-labeled btn-disburse"
                                     (click)="openActionModal(app, 'disburse')">
                                     <span class="material-icons-outlined">payments</span>
-                                    <span>Disburse</span>
+                                    <span>Cairkan</span>
                                 </button>
                                 }
                                 }

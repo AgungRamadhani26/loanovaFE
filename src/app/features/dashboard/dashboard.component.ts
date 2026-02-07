@@ -24,7 +24,7 @@ export class DashboardComponent implements OnInit {
   private platformId = inject(PLATFORM_ID);
 
   // User info
-  readonly username = computed(() => this.authService.user().username || 'User');
+  readonly username = computed(() => this.authService.user().username || 'Pengguna');
   readonly userRoles = computed(() => this.authService.user().roles || []);
 
   // State
@@ -41,10 +41,10 @@ export class DashboardComponent implements OnInit {
     'REJECTED': '#ef4444'             // red-500 (failed)
   };
 
-  // Status labels in Indonesian
+  // Label status dalam Bahasa Indonesia
   readonly statusLabels: Record<string, string> = {
-    'PENDING_REVIEW': 'Pending Review',
-    'WAITING_APPROVAL': 'Menunggu Approval',
+    'PENDING_REVIEW': 'Menunggu Review',
+    'WAITING_APPROVAL': 'Menunggu Persetujuan',
     'WAITING_DISBURSEMENT': 'Menunggu Pencairan',
     'DISBURSED': 'Dicairkan',
     'REJECTED': 'Ditolak'

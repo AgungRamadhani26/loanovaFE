@@ -18,13 +18,13 @@
     <!-- HEADER SECTION -->
     <div class="header-section">
         <div class="title-wrapper">
-            <h1 class="page-title">Role & Permission Management</h1>
-            <p class="page-subtitle">Manage application roles and their associated permissions.</p>
+            <h1 class="page-title">Manajemen Role & Hak Akses</h1>
+            <p class="page-subtitle">Kelola role aplikasi dan hak akses terkait.</p>
         </div>
         <div class="header-actions">
             <button class="btn-primary" (click)="openCreateModal()">
                 <span class="material-icons-outlined">add</span>
-                Add Role
+                Tambah Role
             </button>
             <button class="btn-icon" (click)="loadRoles()" title="Refresh">
                 <span class="material-icons-outlined" [class.animate-spin]="isLoading()">refresh</span>
@@ -40,7 +40,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ roles().length }}</span>
-                <span class="stat-label">Total Roles</span>
+                <span class="stat-label">Total Role</span>
             </div>
         </div>
     </div>
@@ -56,8 +56,8 @@
             <div class="empty-icon">
                 <span class="material-icons-outlined">security</span>
             </div>
-            <h3 class="empty-title">No Roles Found</h3>
-            <p class="empty-message">No role data available at the moment</p>
+            <h3 class="empty-title">Role Tidak Ditemukan</h3>
+            <p class="empty-message">Data role tidak tersedia saat ini</p>
         </div>
         } @else {
         <!-- ROLE CARDS GRID -->
@@ -87,7 +87,7 @@
                 <div class="permissions-section">
                     <h4 class="permissions-title">
                         <span class="material-icons-outlined">vpn_key</span>
-                        Permissions ({{ role.permissions.length }})
+                        Hak Akses ({{ role.permissions.length }})
                     </h4>
                     <div class="permissions-list">
                         @if (role.permissions && role.permissions.length > 0) {
@@ -95,7 +95,7 @@
                         <span class="permission-badge">{{ permission }}</span>
                         }
                         } @else {
-                        <span class="no-permissions">No permissions assigned</span>
+                        <span class="no-permissions">Tidak ada hak akses</span>
                         }
                     </div>
                 </div>
@@ -111,7 +111,7 @@
 <div class="modal-overlay">
     <div class="modal-container modal-lg">
         <div class="modal-header">
-            <h3>Add New Role</h3>
+            <h3>Tambah Role Baru</h3>
             <button class="btn-close" (click)="closeCreateModal()">
                 <span class="material-icons-outlined">close</span>
             </button>
@@ -128,7 +128,7 @@
 
             <!-- Role Name -->
             <div class="form-group">
-                <label>Role Name <span class="required">*</span></label>
+                <label>Nama Role <span class="required">*</span></label>
                 <input type="text" [ngModel]="createRoleForm().roleName" (ngModelChange)="updateRoleName($event)"
                     [class.error]="fieldErrors()['roleName']" placeholder="e.g. ADMIN, MANAGER" maxlength="15">
                 @if (fieldErrors()['roleName']) {
@@ -138,9 +138,9 @@
 
             <!-- Role Description -->
             <div class="form-group">
-                <label>Description <span class="required">*</span></label>
+                <label>Deskripsi <span class="required">*</span></label>
                 <textarea [ngModel]="createRoleForm().roleDescription" (ngModelChange)="updateRoleDescription($event)"
-                    [class.error]="fieldErrors()['roleDescription']" placeholder="Brief description of this role..."
+                    [class.error]="fieldErrors()['roleDescription']" placeholder="Deskripsi singkat role ini..."
                     rows="3" maxlength="255"></textarea>
                 @if (fieldErrors()['roleDescription']) {
                 <span class="error-text">{{ fieldErrors()['roleDescription'] }}</span>
@@ -149,8 +149,8 @@
 
             <!-- Permissions Selection -->
             <div class="form-group">
-                <label>Permissions</label>
-                <p class="form-hint">Select permissions to assign to this role</p>
+                <label>Hak Akses</label>
+                <p class="form-hint">Pilih hak akses untuk role ini</p>
                 <div class="permissions-checkbox-grid">
                     @for (permission of permissions(); track permission.id) {
                     <label class="permission-checkbox">
@@ -168,12 +168,12 @@
 
             <!-- Modal Actions -->
             <div class="modal-actions">
-                <button class="btn-secondary" (click)="closeCreateModal()">Cancel</button>
+                <button class="btn-secondary" (click)="closeCreateModal()">Batal</button>
                 <button class="btn-primary" (click)="submitCreateRole()" [disabled]="isSubmitting()">
                     @if (isSubmitting()) {
-                    <span class="spinner-small"></span> Saving...
+                    <span class="spinner-small"></span> Menyimpan...
                     } @else {
-                    Save Role
+                    Simpan Role
                     }
                 </button>
             </div>
@@ -204,16 +204,16 @@
 
             <!-- Role Name (Read Only) -->
             <div class="form-group">
-                <label>Role Name</label>
+                <label>Nama Role</label>
                 <input type="text" [value]="editingRoleName()" disabled class="input-readonly">
-                <span class="form-hint">Role name cannot be changed</span>
+                <span class="form-hint">Nama role tidak dapat diubah</span>
             </div>
 
             <!-- Role Description -->
             <div class="form-group">
-                <label>Description <span class="required">*</span></label>
+                <label>Deskripsi <span class="required">*</span></label>
                 <textarea [ngModel]="editRoleForm().roleDescription" (ngModelChange)="updateEditDescription($event)"
-                    [class.error]="fieldErrors()['roleDescription']" placeholder="Brief description of this role..."
+                    [class.error]="fieldErrors()['roleDescription']" placeholder="Deskripsi singkat role ini..."
                     rows="3" maxlength="255"></textarea>
                 @if (fieldErrors()['roleDescription']) {
                 <span class="error-text">{{ fieldErrors()['roleDescription'] }}</span>
@@ -222,8 +222,8 @@
 
             <!-- Permissions Selection -->
             <div class="form-group">
-                <label>Permissions</label>
-                <p class="form-hint">Select permissions to assign to this role</p>
+                <label>Hak Akses</label>
+                <p class="form-hint">Pilih hak akses untuk role ini</p>
                 <div class="permissions-checkbox-grid">
                     @for (permission of permissions(); track permission.id) {
                     <label class="permission-checkbox">
@@ -241,12 +241,12 @@
 
             <!-- Modal Actions -->
             <div class="modal-actions">
-                <button class="btn-secondary" (click)="closeEditModal()">Cancel</button>
+                <button class="btn-secondary" (click)="closeEditModal()">Batal</button>
                 <button class="btn-primary" (click)="submitEditRole()" [disabled]="isSubmitting()">
                     @if (isSubmitting()) {
-                    <span class="spinner-small"></span> Updating...
+                    <span class="spinner-small"></span> Memperbarui...
                     } @else {
-                    Update Role
+                    Perbarui Role
                     }
                 </button>
             </div>

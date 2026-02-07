@@ -35,38 +35,38 @@ export class SidebarComponent {
             permissions: ['MENU:DASHBOARD']
         },
         {
-            label: 'Users',
+            label: 'Manajemen Pengguna',
             path: '/admin/users',
             icon: 'people',
             permissions: ['MENU:USERS']
         },
         {
-            label: 'Branch',
+            label: 'Manajemen Cabang',
             path: '/admin/branches',
             icon: 'business',
             permissions: ['MENU:BRANCH']
         },
         {
-            label: 'Role Permission',
+            label: 'Role & Hak Akses',
             path: '/admin/roles',
             icon: 'security',
             permissions: ['MENU:ROLES']
         },
         {
-            label: 'Loan Application',
+            label: 'Pengajuan Pinjaman',
             path: '/admin/loans',
             icon: 'assignment',
             permissions: ['MENU:LOAN']
         },
 
         {
-            label: 'Plafond',
+            label: 'Master Plafond',
             path: '/admin/plafond',
             icon: 'monetization_on',
             permissions: ['MENU:PLAFOND']
         },
         {
-            label: 'User Plafond',
+            label: 'Plafond Nasabah',
             path: '/admin/user-plafonds',
             icon: 'assignment_ind',
             permissions: ['MENU:USER_PLAFOND']

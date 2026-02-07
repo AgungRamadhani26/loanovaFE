@@ -17,8 +17,8 @@
     <!-- HEADER SECTION -->
     <div class="header-section">
         <div class="title-wrapper">
-            <h1 class="page-title">User Plafond Management</h1>
-            <p class="page-subtitle">Assign dan kelola plafond untuk customer</p>
+            <h1 class="page-title">Manajemen Plafond Nasabah</h1>
+            <p class="page-subtitle">Tetapkan dan kelola plafond untuk nasabah</p>
         </div>
     </div>
 
@@ -30,7 +30,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ customers().length }}</span>
-                <span class="stat-label">Total Customer</span>
+                <span class="stat-label">Total Nasabah</span>
             </div>
         </div>
     </div>
@@ -63,7 +63,7 @@
             <div class="empty-icon">
                 <span class="material-icons-outlined">person_off</span>
             </div>
-            <h3 class="empty-title">No Customers Found</h3>
+            <h3 class="empty-title">Nasabah Tidak Ditemukan</h3>
             <p class="empty-message">
                 @if (searchQuery()) {
                 Coba ubah kriteria pencarian
@@ -82,7 +82,7 @@
                         <th>USERNAME</th>
                         <th>EMAIL</th>
                         <th>STATUS</th>
-                        <th style="width: 180px; text-align: center;">ACTIONS</th>
+                        <th style="width: 180px; text-align: center;">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -108,15 +108,15 @@
                         <td>
                             <div class="action-buttons">
                                 <button class="btn-action btn-view" (click)="openViewActiveModal(user)"
-                                    title="View Active Plafond">
+                                    title="Lihat Plafond Aktif">
                                     <span class="material-icons-outlined">credit_card</span>
                                 </button>
                                 <button class="btn-action btn-history" (click)="openViewHistoryModal(user)"
-                                    title="View History">
+                                    title="Lihat Riwayat">
                                     <span class="material-icons-outlined">history</span>
                                 </button>
                                 <button class="btn-action btn-assign" (click)="openAssignModal(user)"
-                                    title="Assign Plafond">
+                                    title="Tetapkan Plafond">
                                     <span class="material-icons-outlined">add_card</span>
                                 </button>
                             </div>
@@ -199,15 +199,15 @@
                 </div>
                 <div class="plafond-details">
                     <div class="detail-row">
-                        <span>Max Amount</span>
+                        <span>Jumlah Maks</span>
                         <strong>{{ formatCurrency(activePlafond()?.maxAmount || 0) }}</strong>
                     </div>
                     <div class="detail-row">
-                        <span>Remaining</span>
+                        <span>Sisa</span>
                         <strong>{{ formatCurrency(activePlafond()?.remainingAmount || 0) }}</strong>
                     </div>
                     <div class="detail-row">
-                        <span>Assigned At</span>
+                        <span>Ditetapkan Pada</span>
                         <strong>{{ formatDate(activePlafond()?.assignedAt || '') }}</strong>
                     </div>
                 </div>
@@ -311,7 +311,7 @@
         <div class="modal-header">
             <h3>
                 <span class="material-icons-outlined">add_card</span>
-                Assign Plafond
+                Tetapkan Plafond
             </h3>
             <button class="btn-close" (click)="closeAssignModal()">
                 <span class="material-icons-outlined">close</span>
@@ -352,7 +352,7 @@
 
             <!-- Max Amount (Auto-filled) -->
             <div class="form-group">
-                <label>Max Amount (Auto)</label>
+                <label>Jumlah Maks (Otomatis)</label>
                 <div class="readonly-input">
                     @if (selectedPlafondMaxAmount() > 0) {
                     {{ formatCurrency(selectedPlafondMaxAmount()) }}
@@ -369,12 +369,12 @@
             </div>
         </div>
         <div class="modal-actions">
-            <button class="btn-secondary" (click)="closeAssignModal()">Cancel</button>
+            <button class="btn-secondary" (click)="closeAssignModal()">Batal</button>
             <button class="btn-primary" (click)="submitAssign()" [disabled]="isSubmitting()">
                 @if (isSubmitting()) {
-                <span class="spinner-small"></span> Processing...
+                <span class="spinner-small"></span> Memproses...
                 } @else {
-                Assign Plafond
+                Tetapkan Plafond
                 }
             </button>
         </div>

@@ -18,13 +18,13 @@
     <!-- HEADER SECTION -->
     <div class="header-section">
         <div class="title-wrapper">
-            <h1 class="page-title">User Management</h1>
-            <p class="page-subtitle">Manage and monitor application users, roles, and access status.</p>
+            <h1 class="page-title">Manajemen Pengguna</h1>
+            <p class="page-subtitle">Kelola dan pantau pengguna aplikasi, role, dan status akses.</p>
         </div>
         <div class="action-wrapper">
             <button class="btn-primary" (click)="openCreateModal()">
                 <span class="material-icons-outlined">person_add</span>
-                <span>Add New User</span>
+                <span>Tambah Pengguna</span>
             </button>
         </div>
     </div>
@@ -37,7 +37,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ users().length }}</span>
-                <span class="stat-label">Total Users</span>
+                <span class="stat-label">Total Pengguna</span>
             </div>
         </div>
         <div class="stat-card">
@@ -46,7 +46,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ activeUserCount() }}</span>
-                <span class="stat-label">Active Users</span>
+                <span class="stat-label">Pengguna Aktif</span>
             </div>
         </div>
         <div class="stat-card">
@@ -55,7 +55,7 @@
             </div>
             <div class="stat-info">
                 <span class="stat-value">{{ adminCount() }}</span>
-                <span class="stat-label">Administrators</span>
+                <span class="stat-label">Administrator</span>
             </div>
         </div>
     </div>
@@ -66,7 +66,7 @@
         <div class="table-controls p-6 border-b border-slate-100 bg-white rounded-t-2xl">
             <div class="search-box">
                 <span class="material-icons-outlined">search</span>
-                <input type="text" placeholder="Search by username, email, branch, or roles..."
+                <input type="text" placeholder="Cari berdasarkan username, email, cabang, atau role..."
                     [ngModel]="searchQuery()" (ngModelChange)="onSearch($event)">
             </div>
             <div class="filter-actions">
@@ -85,11 +85,11 @@
         <div
             class="filter-panel p-6 bg-slate-50 border-b border-slate-100 grid grid-cols-1 md:grid-cols-4 gap-4 items-end animate-slide-down">
             <div class="filter-group">
-                <label class="filter-label">Branch</label>
+                <label class="filter-label">Cabang</label>
                 <select class="filter-select" [ngModel]="selectedBranch()"
                     (ngModelChange)="selectedBranch.set($event); onFilterChange()">
                     @for (branch of availableBranches(); track branch) {
-                    <option [value]="branch">{{ branch === 'ALL' ? 'All Branches' : branch }}</option>
+                    <option [value]="branch">{{ branch === 'ALL' ? 'Semua Cabang' : branch }}</option>
                     }
                 </select>
             </div>
@@ -98,7 +98,7 @@
                 <select class="filter-select" [ngModel]="selectedRole()"
                     (ngModelChange)="selectedRole.set($event); onFilterChange()">
                     @for (role of availableRoles(); track role) {
-                    <option [value]="role">{{ role === 'ALL' ? 'All Roles' : role }}</option>
+                    <option [value]="role">{{ role === 'ALL' ? 'Semua Role' : role }}</option>
                     }
                 </select>
             </div>
@@ -106,9 +106,9 @@
                 <label class="filter-label">Status</label>
                 <select class="filter-select" [ngModel]="selectedStatus()"
                     (ngModelChange)="selectedStatus.set($event); onFilterChange()">
-                    <option value="ALL">All Status</option>
-                    <option value="ACTIVE">Active Only</option>
-                    <option value="INACTIVE">Inactive Only</option>
+                    <option value="ALL">Semua Status</option>
+                    <option value="ACTIVE">Aktif Saja</option>
+                    <option value="INACTIVE">Nonaktif Saja</option>
                 </select>
             </div>
             <div class="filter-group flex gap-2">
@@ -129,11 +129,11 @@
                 <thead>
                     <tr>
                         <th class="text-center" style="width: 50px;">NO</th>
-                        <th>USER INFO</th>
-                        <th>BRANCH</th>
-                        <th>ROLES</th>
+                        <th>INFO PENGGUNA</th>
+                        <th>CABANG</th>
+                        <th>ROLE</th>
                         <th>STATUS</th>
-                        <th class="text-right">ACTIONS</th>
+                        <th class="text-right">AKSI</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -150,7 +150,7 @@
                         <td colspan="6" class="empty-state">
                             <div class="empty-content text-center py-20">
                                 <span class="material-icons-outlined text-5xl text-slate-300">person_off</span>
-                                <p class="mt-4 text-slate-500 font-medium">No users found matching your criteria.</p>
+                                <p class="mt-4 text-slate-500 font-medium">Tidak ada pengguna yang ditemukan.</p>
                             </div>
                         </td>
                     </tr>
@@ -175,7 +175,7 @@
                         </td>
                         <td>
                             <span class="branch-tag" [class.no-branch]="!user.branchCode">
-                                {{ user.branchCode || 'No Branch' }}
+                                {{ user.branchCode || 'Tanpa Cabang' }}
                             </span>
                         </td>
                         <td>
@@ -189,15 +189,16 @@
                         </td>
                         <td>
                             <span class="status-badge" [class.active]="user.isActive">
-                                {{ user.isActive ? 'Active' : 'Inactive' }}
+                                {{ user.isActive ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-2">
-                                <button class="btn-icon-sm" title="Edit User" (click)="openEditModal(user)">
+                                <button class="btn-icon-sm" title="Edit Pengguna" (click)="openEditModal(user)">
                                     <span class="material-icons-outlined">edit</span>
                                 </button>
-                                <button class="btn-icon-sm text-red-500" title="Delete User" (click)="deleteUser(user)">
+                                <button class="btn-icon-sm text-red-500" title="Hapus Pengguna"
+                                    (click)="deleteUser(user)">
                                     <span class="material-icons-outlined">delete</span>
                                 </button>
                             </div>

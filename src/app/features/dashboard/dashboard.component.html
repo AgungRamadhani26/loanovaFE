@@ -25,7 +25,7 @@
         <div class="welcome-content">
             <div class="welcome-badge">
                 <span class="status-dot"></span>
-                Dashboard Analytics
+                Analitik Dashboard
             </div>
             <h1>Selamat Datang, <span>{{ username() }}</span> 👋</h1>
             <p>Statistik real-time untuk membantu Anda memantau performa bisnis.</p>
@@ -94,7 +94,7 @@
                     }
                     <!-- Center circle for donut effect -->
                     <circle cx="100" cy="100" r="45" fill="white" />
-                    <text x="100" y="95" text-anchor="middle" class="pie-center-label">Total</text>
+                    <text x="100" y="95" text-anchor="middle" class="pie-center-label">Jumlah</text>
                     <text x="100" y="115" text-anchor="middle" class="pie-center-value">
                         {{ getTotalApplicationsCount() }}
                     </text>
@@ -130,7 +130,7 @@
                                 [style.background]="getPlafondColor(plafond.plafondName)">
                             </div>
                         </div>
-                        <div class="bar-value">{{ plafond.count }} user</div>
+                        <div class="bar-value">{{ plafond.count }} pengguna</div>
                     </div>
                     }
                 </div>
