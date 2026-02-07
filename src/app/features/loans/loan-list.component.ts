@@ -42,6 +42,10 @@ export class LoanListComponent implements OnInit {
     actionComment = '';
     readonly isSubmitting = signal(false);
 
+    // Confirmation Dialog
+    readonly isConfirmationOpen = signal(false);
+    readonly confirmationDecision = signal<'PROCEED' | 'APPROVE' | 'REJECT' | null>(null);
+
     // User info
     readonly userRoles = computed(() => this.authService.user().roles || []);
     readonly userPermissions = computed(() => this.authService.user().permissions || []);
@@ -322,6 +326,7 @@ export class LoanListComponent implements OnInit {
         }
     }
 
+    // Show confirmation dialog before action
     submitAction(decision: 'PROCEED' | 'APPROVE' | 'REJECT') {
         const app = this.selectedApplication();
         if (!app) return;
@@ -331,6 +336,46 @@ export class LoanListComponent implements OnInit {
             return;
         }
 
+        // Show confirmation dialog
+        this.confirmationDecision.set(decision);
+        this.isConfirmationOpen.set(true);
+    }
+
+    // Cancel confirmation dialog
+    cancelConfirmation() {
+        this.isConfirmationOpen.set(false);
+        this.confirmationDecision.set(null);
+    }
+
+    // Get confirmation message based on action type and decision
+    getConfirmationMessage(): string {
+        const decision = this.confirmationDecision();
+        const actionType = this.actionType();
+        const appName = this.selectedApplication()?.fullNameSnapshot || 'pemohon';
+
+        if (decision === 'REJECT') {
+            return `Apakah Anda yakin ingin MENOLAK pengajuan dari "${appName}"? Tindakan ini tidak dapat dibatalkan.`;
+        }
+
+        switch (actionType) {
+            case 'review':
+                return `Apakah Anda yakin ingin MELANJUTKAN pengajuan dari "${appName}" ke proses approval?`;
+            case 'approve':
+                return `Apakah Anda yakin ingin MENYETUJUI pengajuan dari "${appName}"? Pengajuan akan dilanjutkan ke proses pencairan.`;
+            case 'disburse':
+                return `Apakah Anda yakin ingin MENCAIRKAN dana untuk "${appName}"? Pastikan data rekening sudah benar.`;
+            default:
+                return 'Apakah Anda yakin ingin melanjutkan aksi ini?';
+        }
+    }
+
+    // Confirm and execute the action
+    confirmAction() {
+        const app = this.selectedApplication();
+        const decision = this.confirmationDecision();
+        if (!app || !decision) return;
+
+        this.isConfirmationOpen.set(false);
         this.isSubmitting.set(true);
 
         let apiCall;
@@ -361,7 +406,19 @@ export class LoanListComponent implements OnInit {
         apiCall.subscribe({
             next: (response) => {
                 if (response.success) {
-                    this.successMessage.set(response.message || 'Berhasil!');
+                    // Set appropriate success message
+                    let successMsg = response.message || 'Berhasil!';
+                    if (decision === 'REJECT') {
+                        successMsg = 'Pengajuan berhasil ditolak!';
+                    } else if (this.actionType() === 'review') {
+                        successMsg = 'Pengajuan berhasil dilanjutkan ke proses approval!';
+                    } else if (this.actionType() === 'approve') {
+                        successMsg = 'Pengajuan berhasil disetujui!';
+                    } else if (this.actionType() === 'disburse') {
+                        successMsg = 'Dana berhasil dicairkan!';
+                    }
+
+                    this.successMessage.set(successMsg);
                     this.closeActionModal();
                     // Reload based on current view mode
                     if (this.viewMode() === 'actionable') {
@@ -374,10 +431,12 @@ export class LoanListComponent implements OnInit {
                     this.error.set(response.message || 'Gagal melakukan aksi');
                 }
                 this.isSubmitting.set(false);
+                this.confirmationDecision.set(null);
             },
             error: (err) => {
                 this.error.set(err.error?.message || 'Terjadi kesalahan');
                 this.isSubmitting.set(false);
+                this.confirmationDecision.set(null);
             }
         });
     }

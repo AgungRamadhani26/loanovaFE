@@ -610,73 +610,311 @@
 }
 
 
-<!-- ACTION MODAL -->
+<!-- ACTION MODAL (Enhanced with Full Details) -->
 @if (isActionModalOpen() && selectedApplication()) {
 <div class="modal-overlay" (click)="closeActionModal()">
-    <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-container modal-xl" (click)="$event.stopPropagation()">
         <div class="modal-header">
-            <h3>{{ getActionTitle() }}</h3>
+            <h3>
+                <span class="material-icons-outlined">
+                    {{ actionType() === 'review' ? 'rate_review' :
+                    (actionType() === 'approve' ? 'verified' : 'payments') }}
+                </span>
+                {{ getActionTitle() }}
+                <span class="modal-id">#{{ selectedApplication()!.id }}</span>
+            </h3>
             <button class="btn-close" (click)="closeActionModal()">
                 <span class="material-icons-outlined">close</span>
             </button>
         </div>
 
         <div class="modal-body">
-            <div class="action-summary">
-                <div class="summary-row">
-                    <span>Applicant:</span>
-                    <strong>{{ selectedApplication()!.fullNameSnapshot }}</strong>
-                </div>
-                <div class="summary-row">
-                    <span>Amount:</span>
-                    <strong>{{ formatCurrency(selectedApplication()!.amount) }}</strong>
-                </div>
-                <div class="summary-row">
-                    <span>Status:</span>
-                    <span class="status-badge" [style.background]="getStatusColor(selectedApplication()!.status).bg"
-                        [style.color]="getStatusColor(selectedApplication()!.status).text">
-                        {{ getStatusLabel(selectedApplication()!.status) }}
+            <!-- ACTION BANNER -->
+            <div class="action-banner" [class.review]="actionType() === 'review'"
+                [class.approve]="actionType() === 'approve'" [class.disburse]="actionType() === 'disburse'">
+                <div class="banner-icon">
+                    <span class="material-icons-outlined">
+                        {{ actionType() === 'review' ? 'rate_review' :
+                        (actionType() === 'approve' ? 'verified' : 'payments') }}
                     </span>
                 </div>
+                <div class="banner-text">
+                    <h4>
+                        @if (actionType() === 'review') {
+                        Review Pengajuan
+                        } @else if (actionType() === 'approve') {
+                        Approval Pengajuan
+                        } @else {
+                        Pencairan Dana
+                        }
+                    </h4>
+                    <p>
+                        @if (actionType() === 'review') {
+                        Periksa kelengkapan dokumen dan data pemohon sebelum melanjutkan ke proses approval.
+                        } @else if (actionType() === 'approve') {
+                        Verifikasi data pemohon dan tentukan apakah pengajuan layak disetujui.
+                        } @else {
+                        Konfirmasi pencairan dana ke rekening nasabah sesuai jumlah yang disetujui.
+                        }
+                    </p>
+                </div>
+                <div class="banner-amount">
+                    <span class="amount-label">Jumlah Pinjaman</span>
+                    <span class="amount-value">{{ formatCurrency(selectedApplication()!.amount) }}</span>
+                </div>
             </div>
 
-            <div class="form-group">
-                <label>Comment (optional, required for reject)</label>
-                <textarea [(ngModel)]="actionComment" rows="3" placeholder="Add your comment here..."></textarea>
+            <!-- LOAN DETAILS GRID -->
+            <div class="detail-grid-layout">
+                <!-- CARD 1: DATA IDENTITAS PRIBADI -->
+                <div class="detail-card">
+                    <div class="card-header-clean">
+                        <span class="material-icons-outlined">badge</span>
+                        <h5>Identitas Pribadi</h5>
+                    </div>
+                    <div class="card-body-clean">
+                        <div class="info-row-grid">
+                            <div class="info-item full-width primary">
+                                <span class="label">Nama Lengkap (Sesuai KTP)</span>
+                                <span class="value highlight">{{ selectedApplication()!.fullNameSnapshot }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Nomor NIK</span>
+                                <span class="value mono">{{ selectedApplication()!.nikSnapshot }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Tanggal Lahir</span>
+                                <span class="value">{{ selectedApplication()!.birthDateSnapshot ?
+                                    formatBirthDate(selectedApplication()!.birthDateSnapshot) : '-' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Nomor NPWP</span>
+                                <span class="value mono">{{ selectedApplication()!.npwpNumberSnapshot || '-' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Username</span>
+                                <span class="value">{{ selectedApplication()!.username }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Nomor Handphone</span>
+                                <span class="value">{{ selectedApplication()!.phoneNumberSnapshot }}</span>
+                            </div>
+                            <div class="info-item full-width">
+                                <span class="label">Alamat Domisili</span>
+                                <span class="value address">{{ selectedApplication()!.userAddressSnapshot || '-'
+                                    }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 2: DATA PEKERJAAN & KEUANGAN -->
+                <div class="detail-card">
+                    <div class="card-header-clean">
+                        <span class="material-icons-outlined">work</span>
+                        <h5>Pekerjaan & Keuangan</h5>
+                    </div>
+                    <div class="card-body-clean">
+                        <div class="info-row-grid">
+                            <div class="info-item">
+                                <span class="label">Pekerjaan</span>
+                                <span class="value">{{ selectedApplication()!.occupation || '-' }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="label">Nama Perusahaan/Instansi</span>
+                                <span class="value">{{ selectedApplication()!.companyName || '-' }}</span>
+                            </div>
+                            <div class="info-item full-width featured">
+                                <span class="label">Nomor Rekening Bank</span>
+                                <span class="value mono large">{{ selectedApplication()!.rekeningNumber || '-' }}</span>
+                            </div>
+                        </div>
+
+                        <!-- LOAN CALCULATION SUMMARY -->
+                        <div class="loan-calc-summary">
+                            <div class="calc-header">
+                                <span class="material-icons-outlined">calculate</span>
+                                <span>Kalkulasi Pinjaman</span>
+                            </div>
+                            <div class="calc-grid">
+                                <div class="calc-item">
+                                    <span class="calc-label">Tenor</span>
+                                    <span class="calc-value">{{ selectedApplication()!.tenor }} Bulan</span>
+                                </div>
+                                <div class="calc-item">
+                                    <span class="calc-label">Suku Bunga</span>
+                                    <span class="calc-value">{{ selectedApplication()!.interestRateSnapshot }}% /
+                                        bulan</span>
+                                </div>
+                                <div class="calc-item">
+                                    <span class="calc-label">Total Bunga</span>
+                                    <span class="calc-value">{{
+                                        formatCurrency(calculateTotalInterest(selectedApplication()!.amount,
+                                        selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor))
+                                        }}</span>
+                                </div>
+                                <div class="calc-item">
+                                    <span class="calc-label">Total Pelunasan</span>
+                                    <span class="calc-value">{{
+                                        formatCurrency(calculateTotalRepayment(selectedApplication()!.amount,
+                                        selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor))
+                                        }}</span>
+                                </div>
+                                <div class="calc-item accent full-width">
+                                    <span class="calc-label">Estimasi Angsuran</span>
+                                    <span class="calc-value primary">{{
+                                        formatCurrency(calculateMonthlyInstallment(selectedApplication()!.amount,
+                                        selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor))
+                                        }}/bln</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 3: LAMPIRAN DOKUMEN -->
+                <div class="detail-card full-width">
+                    <div class="card-header-clean">
+                        <span class="material-icons-outlined">folder_open</span>
+                        <h5>Lampiran Dokumen</h5>
+                    </div>
+                    <div class="card-body-clean">
+                        <div class="docs-grid">
+                            @if (selectedApplication()!.ktpPhotoSnapshot) {
+                            <div class="doc-item" (click)="openImagePreview(selectedApplication()!.ktpPhotoSnapshot!)">
+                                <div class="doc-thumbnail">
+                                    <img [src]="getImageUrl(selectedApplication()!.ktpPhotoSnapshot)" alt="KTP">
+                                    <div class="doc-hover-overlay">
+                                        <span class="material-icons-outlined">zoom_in</span>
+                                    </div>
+                                </div>
+                                <span class="doc-name">Foto KTP</span>
+                            </div>
+                            }
+                            @if (selectedApplication()!.npwpPhotoSnapshot) {
+                            <div class="doc-item" (click)="openImagePreview(selectedApplication()!.npwpPhotoSnapshot!)">
+                                <div class="doc-thumbnail">
+                                    <img [src]="getImageUrl(selectedApplication()!.npwpPhotoSnapshot)" alt="NPWP">
+                                    <div class="doc-hover-overlay">
+                                        <span class="material-icons-outlined">zoom_in</span>
+                                    </div>
+                                </div>
+                                <span class="doc-name">Foto NPWP</span>
+                            </div>
+                            }
+                            @if (selectedApplication()!.savingBookCover) {
+                            <div class="doc-item" (click)="openImagePreview(selectedApplication()!.savingBookCover!)">
+                                <div class="doc-thumbnail">
+                                    <img [src]="getImageUrl(selectedApplication()!.savingBookCover)"
+                                        alt="Buku Tabungan">
+                                    <div class="doc-hover-overlay">
+                                        <span class="material-icons-outlined">zoom_in</span>
+                                    </div>
+                                </div>
+                                <span class="doc-name">Buku Tabungan</span>
+                            </div>
+                            }
+                            @if (selectedApplication()!.payslipPhoto) {
+                            <div class="doc-item" (click)="openImagePreview(selectedApplication()!.payslipPhoto!)">
+                                <div class="doc-thumbnail">
+                                    <img [src]="getImageUrl(selectedApplication()!.payslipPhoto)" alt="Slip Gaji">
+                                    <div class="doc-hover-overlay">
+                                        <span class="material-icons-outlined">zoom_in</span>
+                                    </div>
+                                </div>
+                                <span class="doc-name">Slip Gaji</span>
+                            </div>
+                            }
+                            @if (!selectedApplication()!.ktpPhotoSnapshot && !selectedApplication()!.npwpPhotoSnapshot
+                            && !selectedApplication()!.savingBookCover && !selectedApplication()!.payslipPhoto) {
+                            <div class="docs-empty">
+                                <span class="material-icons-outlined">image_not_supported</span>
+                                <p>Tidak ada dokumen yang dilampirkan</p>
+                            </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CARD 4: LOKASI GEOTAGGING -->
+                <div class="detail-card full-width">
+                    <div class="card-header-clean">
+                        <span class="material-icons-outlined">location_on</span>
+                        <h5>Lokasi Pengajuan</h5>
+                    </div>
+                    <div class="card-body-clean p-0">
+                        @if (selectedApplication()!.latitude && selectedApplication()!.longitude) {
+                        <div class="map-wrapper">
+                            <iframe
+                                [src]="getGoogleMapsUrl(selectedApplication()!.latitude!, selectedApplication()!.longitude!) | safeUrl"
+                                width="100%" height="150" style="border:0; border-radius: 0 0 10px 10px;"
+                                allowfullscreen="" loading="lazy">
+                            </iframe>
+                            <div class="coordinates-badge">
+                                <span class="material-icons-outlined">gps_fixed</span>
+                                <span>{{ selectedApplication()!.latitude }}, {{ selectedApplication()!.longitude
+                                    }}</span>
+                            </div>
+                        </div>
+                        } @else {
+                        <div class="map-empty" style="min-height: 80px; padding: 20px;">
+                            <span class="material-icons-outlined" style="font-size: 24px;">location_off</span>
+                            <p style="font-size: 0.8rem;">Lokasi tidak tersedia</p>
+                        </div>
+                        }
+                    </div>
+                </div>
             </div>
 
-            <div class="action-buttons-modal">
-                <button class="btn-secondary" (click)="closeActionModal()" [disabled]="isSubmitting()">
-                    Cancel
-                </button>
-                <button class="btn-danger" (click)="submitAction('REJECT')" [disabled]="isSubmitting()">
-                    @if (isSubmitting()) {
-                    <span class="spinner-small"></span>
+            <!-- ACTION FORM -->
+            <div class="action-form-section">
+                <div class="form-group">
+                    <label>
+                        <span class="material-icons-outlined">comment</span>
+                        Komentar (wajib untuk penolakan)
+                    </label>
+                    <textarea [(ngModel)]="actionComment" rows="3"
+                        placeholder="Tambahkan komentar atau catatan untuk keputusan Anda..."></textarea>
+                </div>
+
+                <div class="action-buttons-modal">
+                    <button class="btn-secondary" (click)="closeActionModal()" [disabled]="isSubmitting()">
+                        <span class="material-icons-outlined">close</span>
+                        Batal
+                    </button>
+                    <button class="btn-danger" (click)="submitAction('REJECT')" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                        <span class="spinner-small"></span>
+                        }
+                        <span class="material-icons-outlined">cancel</span>
+                        Tolak
+                    </button>
+                    @if (actionType() === 'review') {
+                    <button class="btn-primary" (click)="submitAction('PROCEED')" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                        <span class="spinner-small"></span>
+                        }
+                        <span class="material-icons-outlined">arrow_forward</span>
+                        Lanjutkan ke Approval
+                    </button>
+                    } @else if (actionType() === 'approve') {
+                    <button class="btn-primary" (click)="submitAction('APPROVE')" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                        <span class="spinner-small"></span>
+                        }
+                        <span class="material-icons-outlined">verified</span>
+                        Setujui
+                    </button>
+                    } @else if (actionType() === 'disburse') {
+                    <button class="btn-success" (click)="submitAction('APPROVE')" [disabled]="isSubmitting()">
+                        @if (isSubmitting()) {
+                        <span class="spinner-small"></span>
+                        }
+                        <span class="material-icons-outlined">payments</span>
+                        Cairkan Dana
+                    </button>
                     }
-                    Reject
-                </button>
-                @if (actionType() === 'review') {
-                <button class="btn-primary" (click)="submitAction('PROCEED')" [disabled]="isSubmitting()">
-                    @if (isSubmitting()) {
-                    <span class="spinner-small"></span>
-                    }
-                    Proceed
-                </button>
-                } @else if (actionType() === 'approve') {
-                <button class="btn-primary" (click)="submitAction('APPROVE')" [disabled]="isSubmitting()">
-                    @if (isSubmitting()) {
-                    <span class="spinner-small"></span>
-                    }
-                    Approve
-                </button>
-                } @else if (actionType() === 'disburse') {
-                <button class="btn-success" (click)="submitAction('APPROVE')" [disabled]="isSubmitting()">
-                    @if (isSubmitting()) {
-                    <span class="spinner-small"></span>
-                    }
-                    Disburse
-                </button>
-                }
+                </div>
             </div>
         </div>
     </div>
@@ -691,6 +929,44 @@
     </button>
     <div class="preview-container" (click)="$event.stopPropagation()">
         <img [src]="previewImageUrl()" alt="Preview Document">
+    </div>
+</div>
+}
+
+<!-- CONFIRMATION DIALOG -->
+@if (isConfirmationOpen()) {
+<div class="modal-overlay confirmation-overlay">
+    <div class="confirmation-dialog">
+        <div class="confirmation-icon" [class.danger]="confirmationDecision() === 'REJECT'">
+            <span class="material-icons-outlined">
+                {{ confirmationDecision() === 'REJECT' ? 'warning' : 'help_outline' }}
+            </span>
+        </div>
+        <h3>Konfirmasi Tindakan</h3>
+        <p>{{ getConfirmationMessage() }}</p>
+        <div class="confirmation-buttons">
+            <button class="btn-cancel" (click)="cancelConfirmation()" [disabled]="isSubmitting()">
+                <span class="material-icons-outlined">close</span>
+                Batal
+            </button>
+            @if (confirmationDecision() === 'REJECT') {
+            <button class="btn-confirm-danger" (click)="confirmAction()" [disabled]="isSubmitting()">
+                @if (isSubmitting()) {
+                <span class="spinner-small"></span>
+                }
+                <span class="material-icons-outlined">cancel</span>
+                Ya, Tolak
+            </button>
+            } @else {
+            <button class="btn-confirm-primary" (click)="confirmAction()" [disabled]="isSubmitting()">
+                @if (isSubmitting()) {
+                <span class="spinner-small"></span>
+                }
+                <span class="material-icons-outlined">check_circle</span>
+                Ya, Lanjutkan
+            </button>
+            }
+        </div>
     </div>
 </div>
 }
