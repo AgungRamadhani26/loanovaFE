@@ -1,133 +1,143 @@
-<div class="space-y-7 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-10 px-2 sm:px-0">
+<div class="dashboard-container">
 
-    <!-- WELCOME CARD SECTION (Premium Refinement) -->
-    <section
-        class="relative overflow-hidden bg-gradient-to-br from-blue-600 to-indigo-800 rounded-2xl p-7 md:p-10 text-white shadow-lg shadow-blue-200/35">
-        <div class="relative z-10 max-w-2xl space-y-5">
-            <!-- Badge Status -->
-            <div
-                class="inline-flex items-center gap-2 px-3 py-1 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-[10px] font-black uppercase tracking-widest">
-                <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                System Live • Real-time
+    <!-- LOADING STATE -->
+    @if (isLoading()) {
+    <div class="loading-container">
+        <div class="spinner"></div>
+        <p>Memuat statistik dashboard...</p>
+    </div>
+    }
+
+    <!-- ERROR STATE -->
+    @if (error()) {
+    <div class="error-container">
+        <span class="material-icons-outlined">error</span>
+        <p>{{ error() }}</p>
+        <button (click)="loadStatistics()">Coba Lagi</button>
+    </div>
+    }
+
+    <!-- MAIN CONTENT -->
+    @if (!isLoading() && !error() && statistics()) {
+
+    <!-- WELCOME BANNER -->
+    <section class="welcome-banner">
+        <div class="welcome-content">
+            <div class="welcome-badge">
+                <span class="status-dot"></span>
+                Dashboard Analytics
             </div>
-
-            <!-- Welcome Text -->
-            <div class="space-y-2">
-                <h1 class="text-3xl md:text-4xl font-black tracking-tight leading-tight">
-                    Selamat Datang,<br>
-                    <span class="text-blue-100">{{ username() }}</span>
-                    <span class="inline-block ml-2 text-3xl md:text-4xl animate-bounce duration-[2s]">👋</span>
-                </h1>
-                <p class="text-blue-100/80 text-sm md:text-base leading-relaxed max-w-lg">
-                    Aktivitas sistem berjalan normal. Anda memiliki akses penuh untuk memantau performa cabang dan
-                    pengajuan pinjaman hari ini.
-                </p>
-            </div>
+            <h1>Selamat Datang, <span>{{ username() }}</span> 👋</h1>
+            <p>Statistik real-time untuk membantu Anda memantau performa bisnis.</p>
         </div>
-
-        <!-- Dashboard Mini Graphic (Decoration - Adjusted position) -->
-        <div class="absolute bottom-8 right-12 hidden lg:flex items-end gap-x-3 opacity-20 group">
-            <div class="w-2 h-16 bg-white rounded-full transition-all duration-500 group-hover:h-24"></div>
-            <div class="w-2 h-32 bg-white rounded-full transition-all duration-500 group-hover:h-16"></div>
-            <div class="w-2 h-24 bg-white rounded-full transition-all duration-500 group-hover:h-40"></div>
-            <div class="w-2 h-44 bg-white rounded-full transition-all duration-500 group-hover:h-20"></div>
+        <div class="welcome-decoration">
+            <div class="deco-bar"></div>
+            <div class="deco-bar"></div>
+            <div class="deco-bar"></div>
+            <div class="deco-bar"></div>
         </div>
-
-        <!-- Abstract Background Shapes -->
-        <div class="absolute -right-32 -top-32 w-[30rem] h-[30rem] bg-blue-500 rounded-full opacity-20 blur-[100px]">
-        </div>
-        <div class="absolute -left-20 -bottom-20 w-80 h-80 bg-indigo-400 rounded-full opacity-10 blur-[80px]"></div>
     </section>
 
-    <!-- STATS GRID SECTION (Refined) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 md:gap-6">
-        @for (stat of stats(); track stat.label) {
-        <div
-            class="bg-white p-7 rounded-[2rem] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group cursor-default active:scale-95">
-            <div class="flex items-start justify-between mb-8">
-                <!-- ICON BOX -->
-                <div
-                    class="w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-500 shadow-md {{ stat.bgClass }} group-hover:rotate-[15deg]">
-                    <span class="material-icons-outlined text-white text-2xl">{{ stat.icon }}</span>
+    <!-- STAT CARDS -->
+    <section class="stat-cards">
+        <!-- Total Pengajuan -->
+        <div class="stat-card">
+            <div class="stat-icon blue-light">
+                <span class="material-icons-outlined">request_quote</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Nilai Pengajuan</span>
+                <span class="stat-value">{{ formatCurrency(statistics()!.totalSubmissionAmount) }}</span>
+            </div>
+        </div>
+
+        <!-- Total Pencairan -->
+        <div class="stat-card">
+            <div class="stat-icon blue-medium">
+                <span class="material-icons-outlined">account_balance</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Total Nilai Pencairan</span>
+                <span class="stat-value">{{ formatCurrency(statistics()!.totalDisbursedAmount) }}</span>
+            </div>
+        </div>
+
+        <!-- Estimasi Pendapatan -->
+        <div class="stat-card">
+            <div class="stat-icon blue-dark">
+                <span class="material-icons-outlined">insights</span>
+            </div>
+            <div class="stat-info">
+                <span class="stat-label">Estimasi Pendapatan</span>
+                <span class="stat-value">{{ formatCurrency(statistics()!.estimatedTotalIncome) }}</span>
+                <div class="stat-breakdown">
+                    <span>Pokok: {{ formatCurrency(statistics()!.estimatedPrincipal) }}</span>
+                    <span class="divider">|</span>
+                    <span>Bunga: {{ formatCurrency(statistics()!.estimatedInterest) }}</span>
                 </div>
-                <!-- TREND LABEL -->
-                <div class="px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-100">
-                    <div class="flex items-center gap-1.5">
-                        <span
-                            class="w-1.5 h-1.5 rounded-full {{ stat.trend === 'STABLE' ? 'bg-slate-300' : 'bg-green-500 animate-pulse' }}"></span>
-                        <span
-                            class="text-[9px] font-black {{ stat.trend === 'STABLE' ? 'text-slate-400' : 'text-green-600' }} uppercase tracking-widest">
-                            {{ stat.trend }}
-                        </span>
+            </div>
+        </div>
+    </section>
+
+    <!-- CHARTS SECTION -->
+    <section class="charts-section">
+        <!-- PIE CHART - Status Distribution -->
+        <div class="chart-card">
+            <h3>Distribusi Status Pengajuan</h3>
+            <div class="chart-content pie-chart-container">
+                <svg viewBox="0 0 200 200" class="pie-chart">
+                    @for (status of statistics()!.statusDistribution; track status.status; let i = $index) {
+                    <path [attr.d]="getPieSlicePath(statistics()!.statusDistribution, i)"
+                        [attr.fill]="statusColors[status.status]" class="pie-slice">
+                        <title>{{ statusLabels[status.status] }}: {{ status.count }} ({{ status.percentage }}%)</title>
+                    </path>
+                    }
+                    <!-- Center circle for donut effect -->
+                    <circle cx="100" cy="100" r="45" fill="white" />
+                    <text x="100" y="95" text-anchor="middle" class="pie-center-label">Total</text>
+                    <text x="100" y="115" text-anchor="middle" class="pie-center-value">
+                        {{ getTotalApplicationsCount() }}
+                    </text>
+                </svg>
+                <div class="pie-legend">
+                    @for (status of statistics()!.statusDistribution; track status.status) {
+                    <div class="legend-item">
+                        <span class="legend-color" [style.background]="statusColors[status.status]"></span>
+                        <span class="legend-label">{{ statusLabels[status.status] }}</span>
+                        <span class="legend-value">{{ status.count }} ({{ status.percentage }}%)</span>
                     </div>
-                </div>
-            </div>
-
-            <div class="space-y-0.5">
-                <p class="text-3xl font-black text-slate-900 tracking-tight leading-none">{{ stat.value }}</p>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.15em]">{{ stat.label }}</p>
-            </div>
-
-            <!-- ENHANCED MINI GRAPH INDICATOR -->
-            <div class="mt-6 h-1 w-full bg-slate-100 rounded-full overflow-hidden relative">
-                <div
-                    class="absolute inset-y-0 left-0 bg-slate-900 group-hover:bg-blue-600 w-2/3 group-hover:w-full transition-all duration-1000 ease-out">
-                </div>
-            </div>
-        </div>
-        }
-    </div>
-
-    <!-- MAIN CONTENT GRID (Aktivitas & Log) -->
-    <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
-        <!-- RECENT ACTIVITY (Large) -->
-        <div class="xl:col-span-2 bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-10">
-            <div class="flex items-center justify-between mb-10">
-                <h3 class="text-xl font-black text-slate-900 tracking-tight">Aktivitas Terkini</h3>
-                <button class="text-sm font-bold text-blue-600 hover:text-blue-700 transition-colors">Lihat
-                    Semua</button>
-            </div>
-
-            <!-- EMPTY STATE -->
-            <div class="flex flex-col items-center justify-center py-20 text-center space-y-6">
-                <div
-                    class="w-24 h-24 bg-slate-50 rounded-[2rem] flex items-center justify-center border border-dashed border-slate-200">
-                    <span class="material-icons-outlined text-slate-200 text-5xl">inventory_2</span>
-                </div>
-                <div class="space-y-2">
-                    <p class="text-lg font-bold text-slate-400">Belum ada aktivitas baru</p>
-                    <p class="text-sm text-slate-300 max-w-xs mx-auto">Sistem Anda berjalan normal. Data aktivitas
-                        terbaru
-                        akan muncul secara otomatis di sini.</p>
+                    }
                 </div>
             </div>
         </div>
 
-        <!-- QUICK ACTION / INFO (Small) -->
-        <div class="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-xl">
-            <h3 class="text-xl font-bold mb-8">Quick Actions</h3>
-            <div class="space-y-4">
-                <button
-                    class="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center gap-4 group">
-                    <span class="material-icons-outlined text-blue-400">add_task</span>
-                    Buat Pengajuan Baru
-                    <span
-                        class="material-icons-outlined ml-auto opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all">chevron_right</span>
-                </button>
-                <button
-                    class="w-full py-4 px-6 bg-white/10 hover:bg-white/20 rounded-2xl text-left font-bold transition-all flex items-center gap-4 group">
-                    <span class="material-icons-outlined text-purple-400">group_add</span>
-                    Tambah User Baru
-                    <span
-                        class="material-icons-outlined ml-auto opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all">chevron_right</span>
-                </button>
-                <div class="pt-8 mt-8 border-t border-white/10">
-                    <p class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-4">Tips Hari Ini</p>
-                    <p class="text-slate-400 text-sm leading-relaxed italic">
-                        "Lakukan verifikasi berkas secara berkala untuk menjaga kualitas skor kredit cabang Anda."
-                    </p>
+        <!-- BAR CHART - Plafond Distribution -->
+        <div class="chart-card">
+            <h3>Distribusi Plafond Aktif</h3>
+            <div class="chart-content bar-chart-container">
+                @if (statistics()!.plafondDistribution.length === 0) {
+                <div class="empty-chart">
+                    <span class="material-icons-outlined">bar_chart</span>
+                    <p>Belum ada data plafond aktif</p>
                 </div>
+                } @else {
+                <div class="bar-chart">
+                    @for (plafond of statistics()!.plafondDistribution; track plafond.plafondName) {
+                    <div class="bar-item">
+                        <div class="bar-label">{{ plafond.plafondName }}</div>
+                        <div class="bar-track">
+                            <div class="bar-fill" [style.width.%]="getBarWidth(plafond.count)"
+                                [style.background]="getPlafondColor(plafond.plafondName)">
+                            </div>
+                        </div>
+                        <div class="bar-value">{{ plafond.count }} user</div>
+                    </div>
+                    }
+                </div>
+                }
             </div>
         </div>
-    </div>
+    </section>
+
+    }
 </div>
