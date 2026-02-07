@@ -401,6 +401,14 @@ export class LoanListComponent implements OnInit {
         });
     }
 
+    formatBirthDate(dateString: string): string {
+        return new Date(dateString).toLocaleDateString('id-ID', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+    }
+
     getStatusColor(status: string): { bg: string; text: string } {
         const colors: Record<string, { bg: string; text: string }> = {
             'PENDING_REVIEW': { bg: '#fef3c7', text: '#b45309' },

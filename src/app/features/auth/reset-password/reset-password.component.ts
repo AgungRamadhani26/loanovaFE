@@ -123,4 +123,11 @@ export class ResetPasswordComponent implements OnInit {
     toggleConfirmPassword() {
         this.showConfirmPassword.set(!this.showConfirmPassword());
     }
+
+    /**
+     * Navigate to login page
+     */
+    goToLogin() {
+        this.router.navigate(['/auth/login']);
+    }
 }

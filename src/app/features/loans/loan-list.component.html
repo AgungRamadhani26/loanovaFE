@@ -298,211 +298,317 @@
                 <p>Memuat data...</p>
             </div>
             } @else if (selectedApplication()) {
-            <div class="row g-4">
-                <!-- LEFT: CUSTOMER INFO -->
-                <div class="col-lg-4">
-                    <div class="card detail-card h-100">
-                        <div class="card-header-clean">
-                            <span class="material-icons-outlined">person</span>
-                            <h5>Informasi Customer</h5>
+            <div class="modal-detail-layout">
+                <!-- TOP SECTION: STATUS BANNER WITH KEY INFO -->
+                <div class="status-banner-enhanced">
+                    <div class="status-main" [style.background]="getStatusColor(selectedApplication()!.status).bg"
+                        [style.color]="getStatusColor(selectedApplication()!.status).text">
+                        <span class="material-icons-outlined status-icon">
+                            {{ selectedApplication()!.status === 'DISBURSED' ? 'check_circle' :
+                            (selectedApplication()!.status === 'REJECTED' ? 'cancel' : 'pending') }}
+                        </span>
+                        <span class="status-text">{{ getStatusLabel(selectedApplication()!.status) }}</span>
+                    </div>
+                    <div class="banner-info-row">
+                        <div class="banner-info-item">
+                            <span class="material-icons-outlined">schedule</span>
+                            <div>
+                                <span class="info-label">Tanggal Pengajuan</span>
+                                <span class="info-value">{{ formatDate(selectedApplication()!.submittedAt) }}</span>
+                            </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="info-list">
-                                <div class="info-item">
-                                    <label>Nama Lengkap</label>
-                                    <div class="value large">{{ selectedApplication()!.fullNameSnapshot }}</div>
-                                </div>
-                                <div class="info-item">
-                                    <label>NIK</label>
-                                    <div class="value">{{ selectedApplication()!.nikSnapshot }}</div>
-                                </div>
-                                <div class="info-item">
-                                    <label>Email</label>
-                                    <div class="value">{{ selectedApplication()!.username }}</div>
-                                </div>
-                                <div class="info-item">
-                                    <label>No. Telepon</label>
-                                    <div class="value">{{ selectedApplication()!.phoneNumberSnapshot }}</div>
-                                </div>
-                                <div class="info-item">
-                                    <label>Alamat</label>
-                                    <div class="value">{{ selectedApplication()!.userAddressSnapshot || '-' }}</div>
-                                </div>
-                                <div class="separator"></div>
-                                <div class="info-item">
-                                    <label>Pekerjaan</label>
-                                    <div class="value">{{ selectedApplication()!.occupation || '-' }}</div>
-                                </div>
-                                <div class="info-item">
-                                    <label>Perusahaan</label>
-                                    <div class="value">{{ selectedApplication()!.companyName || '-' }}</div>
-                                </div>
-                                <div class="info-item">
-                                    <label>No. Rekening</label>
-                                    <div class="value font-mono">{{ selectedApplication()!.rekeningNumber || '-' }}
-                                    </div>
-                                </div>
+                        <div class="banner-info-item">
+                            <span class="material-icons-outlined">store</span>
+                            <div>
+                                <span class="info-label">Cabang</span>
+                                <span class="info-value">{{ selectedApplication()!.branchCode || '-' }}</span>
+                            </div>
+                        </div>
+                        <div class="banner-info-item">
+                            <span class="material-icons-outlined">account_balance_wallet</span>
+                            <div>
+                                <span class="info-label">Plafond</span>
+                                <span class="info-value">{{ selectedApplication()!.plafondName }}</span>
+                            </div>
+                        </div>
+                        <div class="banner-info-item highlight">
+                            <span class="material-icons-outlined">payments</span>
+                            <div>
+                                <span class="info-label">Jumlah Pinjaman</span>
+                                <span class="info-value amount">{{ formatCurrency(selectedApplication()!.amount)
+                                    }}</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- RIGHT: LOAN INFO & EXTRAS -->
-                <div class="col-lg-8">
-                    <!-- 1. LOAN DETAILS -->
-                    <div class="card detail-card mb-4">
+                <!-- MAIN CONTENT: 2x2 GRID LAYOUT -->
+                <div class="detail-grid-layout">
+                    <!-- CARD 1: DATA IDENTITAS PRIBADI -->
+                    <div class="detail-card">
                         <div class="card-header-clean">
-                            <span class="material-icons-outlined">savings</span>
-                            <h5>Informasi Pinjaman</h5>
+                            <span class="material-icons-outlined">badge</span>
+                            <h5>Identitas Pribadi</h5>
                         </div>
-                        <div class="card-body">
-                            <div class="loan-info-grid">
-                                <div class="loan-metric">
-                                    <label>Produk / Plafond</label>
-                                    <div class="metric-value text-primary">{{ selectedApplication()!.plafondName }}
-                                    </div>
+                        <div class="card-body-clean">
+                            <div class="info-row-grid">
+                                <div class="info-item full-width primary">
+                                    <span class="label">Nama Lengkap (Sesuai KTP)</span>
+                                    <span class="value highlight">{{ selectedApplication()!.fullNameSnapshot }}</span>
                                 </div>
-                                <div class="loan-metric">
-                                    <label>Jumlah Pinjaman</label>
-                                    <div class="metric-value">{{ formatCurrency(selectedApplication()!.amount) }}</div>
+                                <div class="info-item">
+                                    <span class="label">Nomor NIK</span>
+                                    <span class="value mono">{{ selectedApplication()!.nikSnapshot }}</span>
                                 </div>
-                                <div class="loan-metric">
-                                    <label>Status</label>
-                                    <div class="status-badge-clean"
-                                        [style.background]="getStatusColor(selectedApplication()!.status).bg"
-                                        [style.color]="getStatusColor(selectedApplication()!.status).text">
-                                        {{ getStatusLabel(selectedApplication()!.status) }}
-                                    </div>
+                                <div class="info-item">
+                                    <span class="label">Tanggal Lahir</span>
+                                    <span class="value">{{ selectedApplication()!.birthDateSnapshot ?
+                                        formatBirthDate(selectedApplication()!.birthDateSnapshot) : '-' }}</span>
                                 </div>
+                                <div class="info-item">
+                                    <span class="label">Nomor NPWP</span>
+                                    <span class="value mono">{{ selectedApplication()!.npwpNumberSnapshot || '-'
+                                        }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Username</span>
+                                    <span class="value">{{ selectedApplication()!.username }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="label">Nomor Handphone</span>
+                                    <span class="value">{{ selectedApplication()!.phoneNumberSnapshot }}</span>
+                                </div>
+                                <div class="info-item full-width">
+                                    <span class="label">Alamat Domisili</span>
+                                    <span class="value address">{{ selectedApplication()!.userAddressSnapshot || '-'
+                                        }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div class="loan-metric">
-                                    <label>Tenor</label>
-                                    <div class="metric-value">{{ selectedApplication()!.tenor }} Bulan</div>
+                    <!-- CARD 2: DATA PEKERJAAN & KEUANGAN -->
+                    <div class="detail-card">
+                        <div class="card-header-clean">
+                            <span class="material-icons-outlined">work</span>
+                            <h5>Pekerjaan & Keuangan</h5>
+                        </div>
+                        <div class="card-body-clean">
+                            <div class="info-row-grid">
+                                <div class="info-item">
+                                    <span class="label">Pekerjaan</span>
+                                    <span class="value">{{ selectedApplication()!.occupation || '-' }}</span>
                                 </div>
-                                <div class="loan-metric">
-                                    <label>Bunga</label>
-                                    <div class="metric-value">{{ selectedApplication()!.interestRateSnapshot }}%</div>
+                                <div class="info-item">
+                                    <span class="label">Nama Perusahaan/Instansi</span>
+                                    <span class="value">{{ selectedApplication()!.companyName || '-' }}</span>
                                 </div>
-                                <div class="loan-metric">
-                                    <label>Cicilan / Bulan</label>
-                                    <div class="metric-value text-success">{{
-                                        formatCurrency(calculateMonthlyInstallment(selectedApplication()!.amount,
-                                        selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor)) }}
+                                <div class="info-item full-width featured">
+                                    <span class="label">Nomor Rekening Bank</span>
+                                    <span class="value mono large">{{ selectedApplication()!.rekeningNumber || '-'
+                                        }}</span>
+                                </div>
+                            </div>
+
+                            <!-- LOAN CALCULATION SUMMARY -->
+                            <div class="loan-calc-summary">
+                                <div class="calc-header">
+                                    <span class="material-icons-outlined">calculate</span>
+                                    <span>Kalkulasi Pinjaman</span>
+                                </div>
+                                <div class="calc-grid">
+                                    <div class="calc-item">
+                                        <span class="calc-label">Tenor</span>
+                                        <span class="calc-value">{{ selectedApplication()!.tenor }} Bulan</span>
+                                    </div>
+                                    <div class="calc-item">
+                                        <span class="calc-label">Suku Bunga</span>
+                                        <span class="calc-value">{{ selectedApplication()!.interestRateSnapshot }}% /
+                                            bulan</span>
+                                    </div>
+                                    <div class="calc-item">
+                                        <span class="calc-label">Total Bunga</span>
+                                        <span class="calc-value">{{
+                                            formatCurrency(calculateTotalInterest(selectedApplication()!.amount,
+                                            selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor))
+                                            }}</span>
+                                    </div>
+                                    <div class="calc-item">
+                                        <span class="calc-label">Total Pelunasan</span>
+                                        <span class="calc-value">{{
+                                            formatCurrency(calculateTotalRepayment(selectedApplication()!.amount,
+                                            selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor))
+                                            }}</span>
+                                    </div>
+                                    <div class="calc-item accent full-width">
+                                        <span class="calc-label">Estimasi Angsuran</span>
+                                        <span class="calc-value primary">{{
+                                            formatCurrency(calculateMonthlyInstallment(selectedApplication()!.amount,
+                                            selectedApplication()!.interestRateSnapshot, selectedApplication()!.tenor))
+                                            }}/bln</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- 2. DOCUMENTS -->
-                    <div class="card detail-card mb-4">
+                    <!-- CARD 3: LAMPIRAN DOKUMEN -->
+                    <div class="detail-card full-width">
                         <div class="card-header-clean">
-                            <span class="material-icons-outlined">folder</span>
-                            <h5>Dokumen Pendukung</h5>
+                            <span class="material-icons-outlined">folder_open</span>
+                            <h5>Lampiran Dokumen</h5>
                         </div>
-                        <div class="card-body">
-                            <div class="docs-row">
+                        <div class="card-body-clean">
+                            <div class="docs-grid">
                                 @if (selectedApplication()!.ktpPhotoSnapshot) {
                                 <div class="doc-item"
                                     (click)="openImagePreview(selectedApplication()!.ktpPhotoSnapshot!)">
-                                    <img [src]="getImageUrl(selectedApplication()!.ktpPhotoSnapshot)">
-                                    <span>KTP</span>
+                                    <div class="doc-thumbnail">
+                                        <img [src]="getImageUrl(selectedApplication()!.ktpPhotoSnapshot)" alt="KTP">
+                                        <div class="doc-hover-overlay">
+                                            <span class="material-icons-outlined">zoom_in</span>
+                                        </div>
+                                    </div>
+                                    <span class="doc-name">Foto KTP</span>
                                 </div>
                                 }
                                 @if (selectedApplication()!.npwpPhotoSnapshot) {
                                 <div class="doc-item"
                                     (click)="openImagePreview(selectedApplication()!.npwpPhotoSnapshot!)">
-                                    <img [src]="getImageUrl(selectedApplication()!.npwpPhotoSnapshot)">
-                                    <span>NPWP</span>
+                                    <div class="doc-thumbnail">
+                                        <img [src]="getImageUrl(selectedApplication()!.npwpPhotoSnapshot)" alt="NPWP">
+                                        <div class="doc-hover-overlay">
+                                            <span class="material-icons-outlined">zoom_in</span>
+                                        </div>
+                                    </div>
+                                    <span class="doc-name">Foto NPWP</span>
                                 </div>
                                 }
                                 @if (selectedApplication()!.savingBookCover) {
                                 <div class="doc-item"
                                     (click)="openImagePreview(selectedApplication()!.savingBookCover!)">
-                                    <img [src]="getImageUrl(selectedApplication()!.savingBookCover)">
-                                    <span>Buku Tabungan</span>
+                                    <div class="doc-thumbnail">
+                                        <img [src]="getImageUrl(selectedApplication()!.savingBookCover)"
+                                            alt="Buku Tabungan">
+                                        <div class="doc-hover-overlay">
+                                            <span class="material-icons-outlined">zoom_in</span>
+                                        </div>
+                                    </div>
+                                    <span class="doc-name">Buku Tabungan</span>
                                 </div>
                                 }
                                 @if (selectedApplication()!.payslipPhoto) {
                                 <div class="doc-item" (click)="openImagePreview(selectedApplication()!.payslipPhoto!)">
-                                    <img [src]="getImageUrl(selectedApplication()!.payslipPhoto)">
-                                    <span>Slip Gaji</span>
+                                    <div class="doc-thumbnail">
+                                        <img [src]="getImageUrl(selectedApplication()!.payslipPhoto)" alt="Slip Gaji">
+                                        <div class="doc-hover-overlay">
+                                            <span class="material-icons-outlined">zoom_in</span>
+                                        </div>
+                                    </div>
+                                    <span class="doc-name">Slip Gaji</span>
                                 </div>
                                 }
                                 @if (!selectedApplication()!.ktpPhotoSnapshot &&
                                 !selectedApplication()!.npwpPhotoSnapshot && !selectedApplication()!.savingBookCover &&
                                 !selectedApplication()!.payslipPhoto) {
-                                <span class="text-muted fst-italic">Tidak ada dokumen</span>
+                                <div class="docs-empty">
+                                    <span class="material-icons-outlined">image_not_supported</span>
+                                    <p>Tidak ada dokumen yang dilampirkan</p>
+                                </div>
                                 }
                             </div>
                         </div>
                     </div>
 
-                    <!-- 3. MAP -->
-                    @if (selectedApplication()!.latitude && selectedApplication()!.longitude) {
-                    <div class="card detail-card">
+                    <!-- CARD 4: LOKASI GEOTAGGING -->
+                    <div class="detail-card full-width">
                         <div class="card-header-clean">
-                            <span class="material-icons-outlined">place</span>
+                            <span class="material-icons-outlined">location_on</span>
                             <h5>Lokasi Pengajuan</h5>
                         </div>
-                        <div class="map-wrapper">
-                            <iframe
-                                [src]="getGoogleMapsUrl(selectedApplication()!.latitude!, selectedApplication()!.longitude!) | safeUrl"
-                                width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy">
-                            </iframe>
+                        <div class="card-body-clean p-0">
+                            @if (selectedApplication()!.latitude && selectedApplication()!.longitude) {
+                            <div class="map-wrapper">
+                                <iframe
+                                    [src]="getGoogleMapsUrl(selectedApplication()!.latitude!, selectedApplication()!.longitude!) | safeUrl"
+                                    width="100%" height="180" style="border:0; border-radius: 0 0 10px 10px;"
+                                    allowfullscreen="" loading="lazy">
+                                </iframe>
+                                <div class="coordinates-badge">
+                                    <span class="material-icons-outlined">gps_fixed</span>
+                                    <span>{{ selectedApplication()!.latitude }}, {{ selectedApplication()!.longitude
+                                        }}</span>
+                                </div>
+                            </div>
+                            } @else {
+                            <div class="map-empty">
+                                <span class="material-icons-outlined">location_off</span>
+                                <p>Lokasi tidak tersedia</p>
+                                <span class="hint">Informasi GPS tidak terekam saat pengajuan</span>
+                            </div>
+                            }
                         </div>
                     </div>
-                    }
                 </div>
-            </div>
 
-            <!-- History Timeline -->
-            <div class="detail-section history-section">
-                <h4 class="section-title">
-                    <span class="material-icons-outlined">history</span>
-                    Riwayat Pengajuan
-                </h4>
+                <!-- HISTORY TIMELINE SECTION -->
+                <div class="history-section-wrapper">
+                    <div class="history-header">
+                        <span class="material-icons-outlined">history</span>
+                        <h5>Riwayat Status Pengajuan</h5>
+                    </div>
 
-                @if (isHistoryLoading()) {
-                <div class="history-loading">
-                    <div class="loading-spinner small"></div>
-                </div>
-                } @else if (applicationHistory().length === 0) {
-                <p class="no-history">Belum ada riwayat</p>
-                } @else {
-                <div class="timeline">
-                    @for (history of applicationHistory(); track history.id) {
-                    <div class="timeline-item">
-                        <div class="timeline-marker" [style.background]="getStatusColor(history.status).bg"
-                            [style.border-color]="getStatusColor(history.status).text">
-                        </div>
-                        <div class="timeline-content">
-                            <div class="timeline-header">
-                                <span class="status-badge small" [style.background]="getStatusColor(history.status).bg"
+                    @if (isHistoryLoading()) {
+                    <div class="history-loading">
+                        <div class="loading-spinner small"></div>
+                    </div>
+                    } @else if (applicationHistory().length === 0) {
+                    <p class="no-history">Belum ada riwayat perubahan status</p>
+                    } @else {
+                    <div class="timeline-horizontal">
+                        @for (history of applicationHistory().slice().reverse(); track history.id; let i = $index; let
+                        last = $last) {
+                        <div class="timeline-step" [class.completed]="true">
+                            <div class="step-marker" [style.background]="getStatusColor(history.status).bg"
+                                [style.border-color]="getStatusColor(history.status).text">
+                                <span class="material-icons-outlined"
                                     [style.color]="getStatusColor(history.status).text">
+                                    {{ history.status === 'DISBURSED' ? 'check' :
+                                    (history.status === 'REJECTED' ? 'close' : 'circle') }}
+                                </span>
+                            </div>
+                            @if (!last) {
+                            <div class="step-connector"></div>
+                            }
+                            <div class="step-content">
+                                <span class="step-status" [style.color]="getStatusColor(history.status).text">
                                     {{ getStatusLabel(history.status) }}
                                 </span>
-                                <span class="timeline-date">{{ formatDate(history.createdAt) }}</span>
+                                <span class="step-date">{{ formatDate(history.createdAt) }}</span>
+                                <span class="step-actor">
+                                    <span class="material-icons-outlined">person</span>
+                                    {{ history.actionByUsername }}
+                                    <span class="role">({{ history.actionByRole }})</span>
+                                </span>
+                                @if (history.comment) {
+                                <div class="step-comment">
+                                    <span class="material-icons-outlined">comment</span>
+                                    "{{ history.comment }}"
+                                </div>
+                                }
                             </div>
-                            @if (history.comment) {
-                            <p class="timeline-comment">"{{ history.comment }}"</p>
-                            }
-                            <p class="timeline-actor">
-                                <span class="material-icons-outlined">person</span>
-                                {{ history.actionByUsername }}
-                                <span class="actor-role">({{ history.actionByRole }})</span>
-                            </p>
                         </div>
+                        }
                     </div>
                     }
                 </div>
-                }
             </div>
             }
         </div>
     </div>
 </div>
 }
+
 
 <!-- ACTION MODAL -->
 @if (isActionModalOpen() && selectedApplication()) {
