@@ -231,7 +231,7 @@ export class AuthService {
     /**
      * RESET PASSWORD
      * Mengirim request ke backend untuk mengubah password dengan token dari email.
-     * @param request DTO berisi token dan newPassword
+     * @param request DTO berisi token serta newPassword
      */
     resetPassword(request: ResetPasswordRequestDTO): Observable<ApiResponse<null>> {
         return this.http.post<ApiResponse<null>>(`${this.API_URL}/reset-password`, request);
