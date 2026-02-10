@@ -6,6 +6,8 @@ import { UserData } from '../models/response/user-response.model';
 import { UserRequest } from '../models/request/user-request.model';
 import { UserUpdateRequest } from '../models/request/user-update-request.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * USER SERVICE
  * Menangani semua request API terkait manajemen pengguna.
@@ -17,7 +19,7 @@ export class UserService {
     private readonly http = inject(HttpClient);
 
     // Base URL ditangani proxy.conf.json agar diarahkan ke http://localhost:9091
-    private readonly API_URL = '/api/users';
+    private readonly API_URL = `${environment.apiUrl}users`;
 
     /**
      * Mengambil daftar seluruh pengguna

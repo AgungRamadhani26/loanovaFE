@@ -6,6 +6,8 @@ import { LoanApplicationData } from '../models/response/loan-application-respons
 import { ApplicationHistoryData } from '../models/response/application-history-response.model';
 import { LoanReviewRequest } from '../models/request/loan-review-request.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * LOAN APPLICATION SERVICE
  * Service untuk mengelola data pengajuan pinjaman
@@ -15,7 +17,7 @@ import { LoanReviewRequest } from '../models/request/loan-review-request.model';
 })
 export class LoanApplicationService {
     private http = inject(HttpClient);
-    private readonly API_URL = '/api/loan-applications';
+    private readonly API_URL = `${environment.apiUrl}loan-applications`;
 
     /**
      * Get all loan applications (filtered by role in backend)

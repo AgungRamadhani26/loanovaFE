@@ -5,12 +5,14 @@ import { ApiResponse } from '../models/response/api-response.model';
 import { PlafondResponse } from '../models/response/plafond-response.model';
 import { PlafondRequest } from '../models/request/plafond-request.model';
 
+import { environment } from '../../../environments/environment';
+
 @Injectable({
     providedIn: 'root'
 })
 export class PlafondService {
     private http = inject(HttpClient);
-    private readonly API_URL = '/api/plafonds';
+    private readonly API_URL = `${environment.apiUrl}plafonds`;
 
     /**
      * Mengambil daftar plafond

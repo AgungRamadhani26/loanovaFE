@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/response/api-response.model';
 import { DashboardStatisticsResponse } from '../models/response/dashboard-statistics.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * DASHBOARD SERVICE
  * Service untuk mengambil data statistik dashboard
@@ -13,7 +15,7 @@ import { DashboardStatisticsResponse } from '../models/response/dashboard-statis
 })
 export class DashboardService {
     private http = inject(HttpClient);
-    private readonly API_URL = '/api/dashboard';
+    private readonly API_URL = `${environment.apiUrl}dashboard`;
 
     /**
      * Get dashboard statistics

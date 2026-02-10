@@ -15,6 +15,8 @@ import { ApiResponse } from '../models/response/api-response.model';
 import { LoginData } from '../models/response/login-response.model';
 import { StorageUtil } from '../utils/storage-util';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * AUTH SERVICE
  *
@@ -34,7 +36,7 @@ export class AuthService {
     private router = inject(Router);
 
     // Alamat API (Ditangkap oleh proxy.conf.json lalu dioper ke http://localhost:9091)
-    private readonly API_URL = '/api/auth';
+    private readonly API_URL = `${environment.apiUrl}auth`;
 
     /**
      * STATE MANAGEMENT (ANGULAR SIGNALS)

@@ -6,6 +6,8 @@ import { RoleData } from '../models/response/role-response.model';
 import { RoleRequest } from '../models/request/role-request.model';
 import { RoleUpdateRequest } from '../models/request/role-update-request.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * ROLE SERVICE
  * Menangani semua request API terkait manajemen role.
@@ -15,7 +17,7 @@ import { RoleUpdateRequest } from '../models/request/role-update-request.model';
 })
 export class RoleService {
     private readonly http = inject(HttpClient);
-    private readonly API_URL = '/api/roles';
+    private readonly API_URL = `${environment.apiUrl}roles`;
 
     /**
      * Mengambil daftar seluruh role

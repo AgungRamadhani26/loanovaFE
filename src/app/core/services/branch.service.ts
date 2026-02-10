@@ -5,6 +5,8 @@ import { ApiResponse } from '../models/response/api-response.model';
 import { BranchData } from '../models/response/branch-response.model';
 import { BranchRequest } from '../models/request/branch-request.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * BRANCH SERVICE
  * Menangani semua request API terkait manajemen cabang (branches).
@@ -19,7 +21,7 @@ export class BranchService {
     private http = inject(HttpClient);
 
     // Base URL ditangani proxy.conf.json agar diarahkan ke http://localhost:9091
-    private readonly API_URL = '/api/branches';
+    private readonly API_URL = `${environment.apiUrl}branches`;
 
     /**
      * Mengambil daftar seluruh cabang

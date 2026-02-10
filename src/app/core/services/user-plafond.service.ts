@@ -5,6 +5,8 @@ import { ApiResponse } from '../models/response/api-response.model';
 import { UserPlafondData } from '../models/response/user-plafond-response.model';
 import { AssignUserPlafondRequest } from '../models/request/assign-user-plafond-request.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * USER PLAFOND SERVICE
  * Menangani semua request API terkait manajemen plafond user.
@@ -14,7 +16,7 @@ import { AssignUserPlafondRequest } from '../models/request/assign-user-plafond-
 })
 export class UserPlafondService {
     private readonly http = inject(HttpClient);
-    private readonly API_URL = '/api/user-plafonds';
+    private readonly API_URL = `${environment.apiUrl}user-plafonds`;
 
     /**
      * Assign plafond ke user

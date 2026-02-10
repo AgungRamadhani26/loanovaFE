@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { ApiResponse } from '../models/response/api-response.model';
 import { PermissionData } from '../models/response/permission-response.model';
 
+import { environment } from '../../../environments/environment';
+
 /**
  * PERMISSION SERVICE
  * Menangani semua request API terkait manajemen permission.
@@ -13,7 +15,7 @@ import { PermissionData } from '../models/response/permission-response.model';
 })
 export class PermissionService {
     private readonly http = inject(HttpClient);
-    private readonly API_URL = '/api/permissions';
+    private readonly API_URL = `${environment.apiUrl}permissions`;
 
     /**
      * Mengambil daftar seluruh permission
