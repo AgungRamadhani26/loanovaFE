@@ -508,8 +508,8 @@ export class LoanListComponent implements OnInit {
         // Jika path sudah mengandung 'uploads/', kita sesuaikan
         // Namun biasanya path di database disimpan relatif 'uploads/dir/file.jpg' atau 'dir/file.jpg'
 
-        // Asumsi base URL backend port 9091
-        const BACKEND_URL = 'http://localhost:9091';
+        // Asumsi backend deployment IP
+        const BACKEND_URL = 'http://136.113.170.61';
 
         // Cek apakah path sudah include 'uploads' di depannya
         if (cleanPath.startsWith('uploads')) {
