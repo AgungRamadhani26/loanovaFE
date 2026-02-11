@@ -508,8 +508,9 @@ export class LoanListComponent implements OnInit {
         // Jika path sudah mengandung 'uploads/', kita sesuaikan
         // Namun biasanya path di database disimpan relatif 'uploads/dir/file.jpg' atau 'dir/file.jpg'
 
-        // Asumsi backend deployment IP
-        const BACKEND_URL = 'http://136.113.170.61';
+        // Gunakan relative path kosong agar request gambar melalui proxy Vercel (HTTPS -> HTTP)
+        // Vercel akan mem-proxy request /uploads/** ke http://136.113.170.61/uploads/**
+        const BACKEND_URL = '';
 
         // Cek apakah path sudah include 'uploads' di depannya
         if (cleanPath.startsWith('uploads')) {
