@@ -1,6 +1,12 @@
 {
     "/api": {
-        "target": "http://136.113.170.61",
+        "target": "http://localhost:9091",
+        "secure": false,
+        "changeOrigin": true,
+        "logLevel": "debug"
+    },
+    "/uploads": {
+        "target": "http://localhost:9091",
         "secure": false,
         "changeOrigin": true,
         "logLevel": "debug"
